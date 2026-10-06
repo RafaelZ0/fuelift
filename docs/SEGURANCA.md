@@ -1,6 +1,6 @@
-# Segurança – regras obrigatórias do Fuelift
+# Segurança – regras obrigatórias do FuelLift
 
-O Fuelift guarda dados de saúde (peso, alimentação, medicação), que a LGPD trata como dados pessoais sensíveis. Estas regras valem para todas as fases. Se alguma não puder ser cumprida, pare e me explique o motivo antes de seguir.
+O FuelLift guarda dados de saúde (peso, alimentação, medicação), que a LGPD trata como dados pessoais sensíveis. Estas regras valem para todas as fases. Se alguma não puder ser cumprida, pare e me explique o motivo antes de seguir.
 
 As regras atacam as falhas mais comuns em apps gerados por IA: segredos expostos ou repetidos, controle de acesso ausente ou quebrado, entrada sem validação, falta de limite de requisições, código provisório esquecido e dependências inexistentes ou vulneráveis.
 

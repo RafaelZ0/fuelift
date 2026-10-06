@@ -2,8 +2,8 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Fuelift",
-    short_name: "Fuelift",
+    name: "FuelLift",
+    short_name: "FuelLift",
     description: "Treino e nutrição.",
     lang: "pt-BR",
     start_url: "/hoje",

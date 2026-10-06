@@ -3,7 +3,7 @@ import { exigirLogin } from "@/lib/auth/sessao";
 import { registrarAcesso } from "@/lib/dal/acessos";
 import { sair } from "../acoes";
 
-export const metadata = { title: "Aguardando aprovação · Fuelift" };
+export const metadata = { title: "Aguardando aprovação · FuelLift" };
 
 export default async function PaginaAguardando() {
   const usuario = await exigirLogin();

@@ -12,10 +12,10 @@ const archivo = Archivo({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Fuelift",
+  title: "FuelLift",
   description: "Treino e nutrição.",
-  applicationName: "Fuelift",
-  appleWebApp: { capable: true, title: "Fuelift", statusBarStyle: "black-translucent" },
+  applicationName: "FuelLift",
+  appleWebApp: { capable: true, title: "FuelLift", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
   robots: { index: false, follow: false },
 };

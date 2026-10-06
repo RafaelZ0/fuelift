@@ -8,7 +8,7 @@ import { sair } from "../../acoes";
 import { decidirCadastro } from "./actions";
 import { PainelMetas, PainelPerfil, type MetaTela } from "./paineis";
 
-export const metadata = { title: "Ajustes · Fuelift" };
+export const metadata = { title: "Ajustes · FuelLift" };
 
 // Só os campos necessários vão para o navegador (sem user_id nem ids).
 function paraTela(m: Meta): MetaTela {

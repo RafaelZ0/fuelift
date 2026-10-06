@@ -1,4 +1,4 @@
-# Fuelift – instruções para o Claude Code
+# FuelLift – instruções para o Claude Code
 
 App pessoal de treino + nutrição. Antes de começar qualquer fase, leia:
 

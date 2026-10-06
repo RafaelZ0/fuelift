@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { obterSessao } from "@/lib/auth/sessao";
 import { FormEntrar } from "./formularios";
 
-export const metadata = { title: "Entrar · Fuelift" };
+export const metadata = { title: "Entrar · FuelLift" };
 
 export default async function PaginaEntrar() {
   if (await obterSessao()) redirect("/hoje");

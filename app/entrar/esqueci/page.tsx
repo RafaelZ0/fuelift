@@ -1,6 +1,6 @@
 import { FormEsqueci } from "../formularios";
 
-export const metadata = { title: "Esqueci a senha · Fuelift" };
+export const metadata = { title: "Esqueci a senha · FuelLift" };
 
 export default function PaginaEsqueci() {
   return (

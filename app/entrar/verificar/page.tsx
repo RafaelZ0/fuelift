@@ -1,6 +1,6 @@
 import { FormVerificar } from "../formularios";
 
-export const metadata = { title: "Confirmar e-mail · Fuelift" };
+export const metadata = { title: "Confirmar e-mail · FuelLift" };
 
 export default function PaginaVerificar() {
   return (

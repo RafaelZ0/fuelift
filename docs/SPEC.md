@@ -1,10 +1,10 @@
-# Especificação – Fuelift (app de treino + nutrição)
+# Especificação – FuelLift (app de treino + nutrição)
 
 Documento de referência para o desenvolvimento no Claude Code. Descreve o que o app faz, como os dados se organizam e em que ordem construir. Onde houver "verificar", a informação não foi confirmada e precisa ser checada na fonte oficial antes de implementar.
 
 ## 1. Visão geral
 
-Fuelift (fuel + lift: combustível e treino) é um app pessoal de saúde que junta, num lugar só:
+FuelLift (fuel + lift: combustível e treino) é um app pessoal de saúde que junta, num lugar só:
 
 - diário alimentar com banco de alimentos brasileiro (estilo Yazio), código de barras e registro por texto/foto com IA;
 - cálculo do gasto calórico diário, primeiro por fórmula e depois adaptativo (pelos dados reais de peso e consumo);

@@ -1,6 +1,6 @@
 import { FormNovaSenha } from "../formularios";
 
-export const metadata = { title: "Nova senha · Fuelift" };
+export const metadata = { title: "Nova senha · FuelLift" };
 
 export default function PaginaNovaSenha() {
   return (

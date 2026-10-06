@@ -1,7 +1,7 @@
 import { EmBreve } from "@/components/em-breve";
 import { exigirUsuario } from "@/lib/auth/sessao";
 
-export const metadata = { title: "Comida · Fuelift" };
+export const metadata = { title: "Comida · FuelLift" };
 
 export default async function Pagina() {
   await exigirUsuario();
