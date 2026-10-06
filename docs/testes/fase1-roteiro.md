@@ -3,20 +3,20 @@
 Ambiente: sua máquina, branch `dev` do Neon. Anote em cada passo: **OK** ou **FALHOU** + o que apareceu na tela (sem colar senhas ou códigos).
 
 Preparação:
-- `.env.local` preenchido (dev) com `ADMIN_EMAILS=<seu e-mail principal>`.
-- Migrations aplicadas no dev (eu rodo antes de você começar).
+- `.env.local` (dev) e migrations: já prontos. O admin é `zoppe@outlook.com.br`.
+- O branch `dev` começa sem nenhum usuário.
 - Duas contas de e-mail. No Outlook, dá para usar o mesmo endereço com sufixo: `seuemail+teste@outlook.com.br` chega na mesma caixa.
-- Rode o app com HTTPS local (os cookies de sessão exigem HTTPS):
+- Rode o app (o `.env.local` já aponta para o branch `dev`):
 
 ```bash
-npm run dev -- --experimental-https
+npm run dev
 ```
 
-Abra `https://localhost:3000` no Chrome. Se aparecer aviso de certificado, aceite (é o certificado local de desenvolvimento).
+Abra `http://localhost:3000` no **Chrome** (o Chrome aceita os cookies de sessão em localhost; o Safari não, sem HTTPS).
 
 ## A. Conta do administrador (e-mail principal)
 
-1. Sem login, abra `https://localhost:3000/ajustes`. **Esperado:** vai para "Entrar".
+1. Sem login, abra `http://localhost:3000/ajustes`. **Esperado:** vai para "Entrar".
 2. "Criar conta": nome, e-mail principal, senha com 9 caracteres. **Esperado:** "A senha precisa ter pelo menos 10 caracteres."
 3. Repita com senha de 10+ caracteres. **Esperado:** vai para "Confirme seu e-mail".
 4. Digite um código errado (ex.: 000000). **Esperado:** "Código inválido ou vencido."
