@@ -82,16 +82,20 @@ export const acessos = pgTable(
     status: text("status").notNull().default("pendente"),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
     decididoEm: timestamp("decidido_em", { withTimezone: true }),
+    // Sessões criadas antes deste instante são recusadas pelo app
+    // (preenchido quando a senha é trocada).
+    sessoesValidasDesde: timestamp("sessoes_validas_desde", { withTimezone: true }),
   },
   (t) => [
     check("acessos_email_check", sql`char_length(${t.email}) <= 320`),
     check("acessos_status_check", sql`${t.status} in ('pendente', 'aprovado', 'recusado')`),
     index("acessos_status").on(t.status),
+    index("acessos_email").on(t.email),
   ],
 );
 
 // Contador de tentativas por janela de tempo (seção 5 do SEGURANCA.md).
-// A chave é sempre um hash: nunca guarda e-mail ou IP em texto.
+// A chave é sempre um HMAC: nunca guarda e-mail ou IP em texto.
 export const limites = pgTable(
   "limites",
   {

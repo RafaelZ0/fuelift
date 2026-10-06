@@ -22,7 +22,7 @@ export async function registrarAcesso(
   exigirId(userId);
   const valores = {
     userId,
-    email: email.slice(0, 320),
+    email: email.toLowerCase().slice(0, 320),
     status: administrador ? "aprovado" : "pendente",
     decididoEm: administrador ? sql`now()` : null,
   };
@@ -36,6 +36,30 @@ export async function registrarAcesso(
 
   const [existente] = await db.select().from(acessos).where(eq(acessos.userId, userId)).limit(1);
   return existente;
+}
+
+/** Marco a partir do qual as sessões do usuário valem (null = todas valem). */
+export async function sessoesValidasDesde(userId: string): Promise<Date | null> {
+  exigirId(userId);
+  const [linha] = await db
+    .select({ desde: acessos.sessoesValidasDesde })
+    .from(acessos)
+    .where(eq(acessos.userId, userId))
+    .limit(1);
+  return linha?.desde ?? null;
+}
+
+/**
+ * Após a troca de senha (usuário ainda não logado, só temos o e-mail):
+ * toda sessão criada antes de agora passa a ser recusada pelo app.
+ */
+export async function encerrarSessoesPorEmail(email: string): Promise<number> {
+  const linhas = await db
+    .update(acessos)
+    .set({ sessoesValidasDesde: sql`now()` })
+    .where(eq(acessos.email, email.toLowerCase()))
+    .returning({ userId: acessos.userId });
+  return linhas.length;
 }
 
 export async function listarPendentes(admin: Administrador): Promise<Acesso[]> {

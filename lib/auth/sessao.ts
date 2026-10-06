@@ -2,17 +2,22 @@ import "server-only";
 
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { registrarAcesso, type Administrador } from "@/lib/dal/acessos";
+import { registrarAcesso, sessoesValidasDesde, type Administrador } from "@/lib/dal/acessos";
 import { garantirPerfil } from "@/lib/dal/perfil";
+import { sessaoAindaValida } from "@/lib/regras-sessao";
 import { auth } from "./server";
 
 export type UsuarioSessao = { id: string; email: string; emailVerificado: boolean };
 
-/** Lê a sessão no servidor (uma vez por requisição). */
+/**
+ * Lê a sessão no servidor (uma vez por requisição). Sessões criadas antes da
+ * última troca de senha são tratadas como inexistentes.
+ */
 export const obterSessao = cache(async (): Promise<UsuarioSessao | null> => {
   const { data } = await auth.getSession();
   const user = data?.user;
-  if (!user?.id) return null;
+  if (!user?.id || !data?.session) return null;
+  if (!sessaoAindaValida(data.session.createdAt, await sessoesValidasDesde(user.id))) return null;
   return { id: user.id, email: user.email, emailVerificado: user.emailVerified === true };
 });
 
