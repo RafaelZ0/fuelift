@@ -50,7 +50,7 @@ export async function salvarMetas(_: EstadoForm, form: FormData): Promise<Estado
 }
 
 const decisaoSchema = z.object({
-  alvo: z.string().min(1).max(200),
+  alvo: z.uuid(),
   decisao: z.enum(["aprovar", "recusar"]),
 });
 

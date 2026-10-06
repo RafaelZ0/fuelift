@@ -13,13 +13,13 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
-// user_id = id do usuário no Neon Auth (texto). Sem FK para neon_auth,
+// user_id = id do usuário no Neon Auth (uuid, conferido em neon_auth.user). Sem FK para neon_auth,
 // porque o papel do app não tem acesso àquele schema.
 
 export const perfis = pgTable(
   "perfis",
   {
-    userId: text("user_id").primaryKey(),
+    userId: uuid("user_id").primaryKey(),
     nome: text("nome"),
     dataNascimento: date("data_nascimento"),
     sexo: text("sexo"),
@@ -45,7 +45,7 @@ export const metas = pgTable(
   "metas",
   {
     id: uuid("id").primaryKey().defaultRandom(),
-    userId: text("user_id")
+    userId: uuid("user_id")
       .notNull()
       .references(() => perfis.userId, { onDelete: "cascade" }),
     vigenteDesde: date("vigente_desde").notNull(),
@@ -77,7 +77,7 @@ export const metas = pgTable(
 export const acessos = pgTable(
   "acessos",
   {
-    userId: text("user_id").primaryKey(),
+    userId: uuid("user_id").primaryKey(),
     email: text("email").notNull(),
     status: text("status").notNull().default("pendente"),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),

@@ -18,8 +18,8 @@ import type { DadosMeta } from "@/lib/validacao/metas";
 import type { DadosPerfil } from "@/lib/validacao/perfil";
 
 // Usuários fictícios criados só durante o teste e apagados no final.
-const A = `teste-${randomUUID()}`;
-const B = `teste-${randomUUID()}`;
+const A = randomUUID();
+const B = randomUUID();
 
 const perfilBase: DadosPerfil = {
   nome: null,
@@ -116,6 +116,7 @@ describe("isolamento entre usuários: A não apaga dados de B", () => {
   it("chamadas sem user_id são barradas", async () => {
     await expect(obterPerfil("")).rejects.toThrow();
     await expect(historicoMetas("")).rejects.toThrow();
+    await expect(obterPerfil("teste-nao-uuid")).rejects.toThrow();
   });
 });
 

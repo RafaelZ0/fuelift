@@ -1,9 +1,10 @@
 CREATE TABLE "acessos" (
-	"user_id" text PRIMARY KEY NOT NULL,
+	"user_id" uuid PRIMARY KEY NOT NULL,
 	"email" text NOT NULL,
 	"status" text DEFAULT 'pendente' NOT NULL,
 	"criado_em" timestamp with time zone DEFAULT now() NOT NULL,
 	"decidido_em" timestamp with time zone,
+	"sessoes_validas_desde" timestamp with time zone,
 	CONSTRAINT "acessos_email_check" CHECK (char_length("acessos"."email") <= 320),
 	CONSTRAINT "acessos_status_check" CHECK ("acessos"."status" in ('pendente', 'aprovado', 'recusado'))
 );
@@ -17,7 +18,7 @@ CREATE TABLE "limites" (
 --> statement-breakpoint
 CREATE TABLE "metas" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text NOT NULL,
+	"user_id" uuid NOT NULL,
 	"vigente_desde" date NOT NULL,
 	"kcal" integer,
 	"proteina_g" integer,
@@ -39,7 +40,7 @@ CREATE TABLE "metas" (
 );
 --> statement-breakpoint
 CREATE TABLE "perfis" (
-	"user_id" text PRIMARY KEY NOT NULL,
+	"user_id" uuid PRIMARY KEY NOT NULL,
 	"nome" text,
 	"data_nascimento" date,
 	"sexo" text,
@@ -57,5 +58,6 @@ CREATE TABLE "perfis" (
 --> statement-breakpoint
 ALTER TABLE "metas" ADD CONSTRAINT "metas_user_id_perfis_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."perfis"("user_id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "acessos_status" ON "acessos" USING btree ("status");--> statement-breakpoint
+CREATE INDEX "acessos_email" ON "acessos" USING btree ("email");--> statement-breakpoint
 CREATE INDEX "limites_janela" ON "limites" USING btree ("janela");--> statement-breakpoint
 CREATE INDEX "metas_user_vigencia" ON "metas" USING btree ("user_id","vigente_desde" DESC NULLS LAST);
