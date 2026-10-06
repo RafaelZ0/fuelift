@@ -1,8 +1,8 @@
 import "server-only";
 
-import { createHmac } from "node:crypto";
 import { headers } from "next/headers";
 import { consumirLimite } from "@/lib/dal/limites";
+import { chaveDoLimite, chaveHmacLimites } from "@/lib/regras-limites";
 
 const MINUTO = 60;
 
@@ -13,16 +13,9 @@ export const LIMITES = {
   cadastroPorIp: { maximo: 5, janela: 60 * MINUTO },
   verificarPorEmail: { maximo: 5, janela: 15 * MINUTO },
   reenviarPorEmail: { maximo: 3, janela: 60 * MINUTO },
+  recuperarPorEmail: { maximo: 3, janela: 60 * MINUTO },
+  novaSenhaPorEmail: { maximo: 5, janela: 15 * MINUTO },
 } as const;
-
-/** Hash com chave secreta: a tabela nunca guarda e-mail ou IP legíveis. */
-function chave(tipo: string, valor: string): string {
-  const segredo = process.env.NEON_AUTH_COOKIE_SECRET ?? "";
-  const hash = createHmac("sha256", `fuelift-limites:${segredo}`)
-    .update(valor.toLowerCase())
-    .digest("base64url");
-  return `${tipo}:${hash}`;
-}
 
 export async function ipDaRequisicao(): Promise<string> {
   const h = await headers();
@@ -33,10 +26,11 @@ export async function ipDaRequisicao(): Promise<string> {
 export async function dentroDoLimite(
   verificacoes: Array<{ tipo: keyof typeof LIMITES; valor: string }>,
 ): Promise<boolean> {
+  const chave = chaveHmacLimites();
   let permitido = true;
   for (const { tipo, valor } of verificacoes) {
     const { maximo, janela } = LIMITES[tipo];
-    if (!(await consumirLimite(chave(tipo, valor), maximo, janela))) permitido = false;
+    if (!(await consumirLimite(chaveDoLimite(tipo, valor, chave), maximo, janela))) permitido = false;
   }
   return permitido;
 }
