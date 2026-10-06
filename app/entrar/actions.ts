@@ -1,13 +1,17 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { encerrarSessoesNoNeon, redefinirSenhaComCodigo } from "@/lib/auth/redefinir-senha";
 import { auth } from "@/lib/auth/server";
+import { encerrarSessoesPorEmail } from "@/lib/dal/acessos";
 import { dentroDoLimite, ipDaRequisicao } from "@/lib/limites";
 import { registrarErro } from "@/lib/log";
 import { errosPorCampo, formParaObjeto, type ErrosCampos } from "@/lib/validacao/comum";
 import {
   cadastroSchema,
   entrarSchema,
+  novaSenhaSchema,
+  recuperarSchema,
   reenviarSchema,
   verificarSchema,
 } from "@/lib/validacao/auth";
@@ -107,6 +111,70 @@ export async function verificar(_: EstadoAuth, form: FormData): Promise<EstadoAu
     return { erro: FALHA_GERAL, valores };
   }
   return { ok: "E-mail confirmado. Agora é só entrar.", valores };
+}
+
+export async function pedirCodigoSenha(_: EstadoAuth, form: FormData): Promise<EstadoAuth> {
+  const bruto = formParaObjeto(form, ["email"]);
+  const valores = { email: bruto.email };
+  const r = recuperarSchema.safeParse(bruto);
+  if (!r.success) return { erros: errosPorCampo(r.error), valores };
+
+  if (
+    !(await dentroDoLimite([
+      { tipo: "cadastroPorIp", valor: await ipDaRequisicao() },
+      { tipo: "recuperarPorEmail", valor: r.data.email },
+    ]))
+  ) {
+    return { erro: MUITAS_TENTATIVAS, valores };
+  }
+
+  try {
+    await auth.emailOtp.sendVerificationOtp({ email: r.data.email, type: "forget-password" });
+  } catch (e) {
+    registrarErro("pedirCodigoSenha", e);
+  }
+  // Mesma resposta sempre: não revela se o e-mail existe.
+  redirect("/entrar/nova-senha");
+}
+
+export async function redefinirSenha(_: EstadoAuth, form: FormData): Promise<EstadoAuth> {
+  const bruto = formParaObjeto(form, ["email", "codigo", "senha", "confirmacao"]);
+  const valores = { email: bruto.email };
+  const r = novaSenhaSchema.safeParse(bruto);
+  if (!r.success) return { erros: errosPorCampo(r.error), valores };
+
+  if (
+    !(await dentroDoLimite([
+      { tipo: "entrarPorIp", valor: await ipDaRequisicao() },
+      { tipo: "novaSenhaPorEmail", valor: r.data.email },
+    ]))
+  ) {
+    return { erro: MUITAS_TENTATIVAS, valores };
+  }
+
+  try {
+    const troca = await redefinirSenhaComCodigo(r.data.email, r.data.codigo, r.data.senha);
+    if (!troca.ok) return { erro: "Código inválido ou vencido.", valores };
+  } catch (e) {
+    registrarErro("redefinirSenha", e);
+    return { erro: FALHA_GERAL, valores };
+  }
+
+  // Senha trocada: encerra as outras sessões no app (efeito imediato) e no Neon.
+  try {
+    await encerrarSessoesPorEmail(r.data.email);
+  } catch (e) {
+    registrarErro("encerrarSessoesApp", e);
+  }
+  let entrou = false;
+  try {
+    entrou = await encerrarSessoesNoNeon(r.data.email, r.data.senha);
+    if (!entrou) registrarErro("encerrarSessoesNeon", { name: "RevogacaoFalhou" });
+  } catch (e) {
+    registrarErro("encerrarSessoesNeon", e);
+  }
+  if (!entrou) return { ok: "Senha alterada. Entre com a senha nova.", valores };
+  redirect("/hoje");
 }
 
 export async function reenviarCodigo(_: EstadoAuth, form: FormData): Promise<EstadoAuth> {

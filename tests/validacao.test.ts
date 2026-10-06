@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { cadastroSchema, entrarSchema, verificarSchema } from "@/lib/validacao/auth";
+import { cadastroSchema, entrarSchema, novaSenhaSchema, recuperarSchema, verificarSchema } from "@/lib/validacao/auth";
 import { metaSchema } from "@/lib/validacao/metas";
 import { perfilSchema } from "@/lib/validacao/perfil";
 
@@ -116,6 +116,10 @@ describe("autenticação", () => {
     ["nome vazio no cadastro", cadastroSchema, { nome: "  ", email: "a@b.com", senha: "1234567890" }],
     ["código com 5 números", verificarSchema, { email: "a@b.com", codigo: "12345" }],
     ["código com letras", verificarSchema, { email: "a@b.com", codigo: "12a456" }],
+    ["e-mail inválido na recuperação", recuperarSchema, { email: "nao-e-email" }],
+    ["nova senha curta", novaSenhaSchema, { email: "a@b.com", codigo: "123456", senha: "curta", confirmacao: "curta" }],
+    ["confirmação diferente", novaSenhaSchema, { email: "a@b.com", codigo: "123456", senha: "1234567890", confirmacao: "1234567891" }],
+    ["código inválido na nova senha", novaSenhaSchema, { email: "a@b.com", codigo: "abc", senha: "1234567890", confirmacao: "1234567890" }],
   ] as const)("recusa %s", (_, schema, dados) => {
     expect(schema.safeParse(dados).success).toBe(false);
   });

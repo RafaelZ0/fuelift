@@ -6,6 +6,8 @@ import { Aviso, BotaoEnviar, Campo } from "@/components/ui";
 import {
   cadastrar,
   entrar,
+  pedirCodigoSenha,
+  redefinirSenha,
   reenviarCodigo,
   verificar,
   type EstadoAuth,
@@ -28,9 +30,58 @@ export function FormEntrar() {
         </Link>
       ) : null}
       <BotaoEnviar pendente="Entrando…">Entrar</BotaoEnviar>
-      <Link href="/entrar/cadastro" className="block text-center font-semibold text-suave underline">
-        Criar conta
+      <div className="flex justify-between gap-4">
+        <Link href="/entrar/esqueci" className="flex min-h-12 items-center font-semibold text-suave underline">
+          Esqueci a senha
+        </Link>
+        <Link href="/entrar/cadastro" className="flex min-h-12 items-center font-semibold text-suave underline">
+          Criar conta
+        </Link>
+      </div>
+    </form>
+  );
+}
+
+export function FormEsqueci() {
+  const [estado, acao] = useActionState(pedirCodigoSenha, inicial);
+  return (
+    <form action={acao} className="space-y-8" noValidate>
+      <Campo nome="email" rotulo="E-mail" tipo="email" teclado="email" autoComplete="email"
+        valor={estado.valores?.email} erro={estado.erros?.email} />
+      {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
+      <BotaoEnviar pendente="Enviando…">Enviar código</BotaoEnviar>
+      <Link href="/entrar" className="block text-center font-semibold text-suave underline">
+        Voltar
       </Link>
+    </form>
+  );
+}
+
+export function FormNovaSenha() {
+  const [estado, acao] = useActionState(redefinirSenha, inicial);
+  if (estado.ok) {
+    return (
+      <div className="space-y-8">
+        <Aviso tipo="ok">{estado.ok}</Aviso>
+        <Link href="/entrar" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo">
+          Entrar
+        </Link>
+      </div>
+    );
+  }
+  return (
+    <form action={acao} className="space-y-8" noValidate>
+      <Campo nome="email" rotulo="E-mail" tipo="email" teclado="email" autoComplete="email"
+        valor={estado.valores?.email} erro={estado.erros?.email} />
+      <Campo nome="codigo" rotulo="Código" teclado="numeric" autoComplete="one-time-code"
+        maxLength={6} erro={estado.erros?.codigo} />
+      <Campo nome="senha" rotulo="Nova senha" tipo="password" autoComplete="new-password"
+        dica="Pelo menos 10 caracteres." erro={estado.erros?.senha} />
+      <Campo nome="confirmacao" rotulo="Repita a nova senha" tipo="password" autoComplete="new-password"
+        erro={estado.erros?.confirmacao} />
+      {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
+      <BotaoEnviar pendente="Salvando…">Trocar senha</BotaoEnviar>
+      <p className="text-sm text-suave">Ao trocar a senha, você sai da conta em todos os outros aparelhos.</p>
     </form>
   );
 }

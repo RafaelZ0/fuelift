@@ -3,7 +3,15 @@ import { inArray, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { db } from "@/lib/db";
 import { acessos, metas, perfis } from "@/lib/db/schema";
-import { decidirAcesso, listarPendentes, registrarAcesso, type Administrador } from "@/lib/dal/acessos";
+import {
+  decidirAcesso,
+  encerrarSessoesPorEmail,
+  listarPendentes,
+  registrarAcesso,
+  sessoesValidasDesde,
+  type Administrador,
+} from "@/lib/dal/acessos";
+import { sessaoAindaValida } from "@/lib/regras-sessao";
 import { excluirMeta, historicoMetas, metaVigente, obterMeta, salvarMeta } from "@/lib/dal/metas";
 import { atualizarPerfil, garantirPerfil, obterPerfil } from "@/lib/dal/perfil";
 import type { DadosMeta } from "@/lib/validacao/metas";
@@ -151,5 +159,27 @@ describe("CHECKs do banco recusam valores fora dos limites", () => {
     await expect(
       db.update(perfis).set({ dataNascimento: "1899-12-31" }).where(sql`${perfis.userId} = ${A}`),
     ).rejects.toThrow();
+  });
+});
+
+describe("troca de senha encerra as sessões só do próprio usuário", () => {
+  it("marca A e não mexe em B", async () => {
+    await registrarAcesso(A, "a@teste.invalid", true);
+    await registrarAcesso(B, "b@teste.invalid", false);
+    const sessaoAntiga = new Date(Date.now() - 60 * 60 * 1000);
+
+    expect(await encerrarSessoesPorEmail("A@Teste.invalid")).toBe(1);
+
+    const desdeA = await sessoesValidasDesde(A);
+    expect(desdeA).not.toBeNull();
+    expect(sessaoAindaValida(sessaoAntiga, desdeA)).toBe(false);
+    expect(sessaoAindaValida(new Date(), desdeA)).toBe(true);
+
+    expect(await sessoesValidasDesde(B)).toBeNull();
+    expect(sessaoAindaValida(sessaoAntiga, await sessoesValidasDesde(B))).toBe(true);
+  });
+
+  it("e-mail sem conta não altera nada", async () => {
+    expect(await encerrarSessoesPorEmail("ninguem@teste.invalid")).toBe(0);
   });
 });
