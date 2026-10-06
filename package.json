@@ -6,7 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "next typegen && tsc --noEmit",
+    "test": "vitest run",
+    "test:banco": "node scripts/testar-banco.mjs",
+    "db:gerar": "drizzle-kit generate",
+    "db:migrar": "drizzle-kit migrate"
   },
   "dependencies": {
     "@neondatabase/auth": "0.5.0-beta",
