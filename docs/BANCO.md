@@ -2,6 +2,8 @@
 
 ## 1. Branches do Neon
 
+Projeto Neon: `fuelift` (`gentle-scene-00627818`, região aws-us-east-2). No Neon, o branch principal se chama **`production`**; neste guia, "main" e "production" são o mesmo branch.
+
 | Branch | Uso | Quem usa |
 |---|---|---|
 | `main` | Produção (dados reais) | Vercel – Production |
@@ -17,7 +19,7 @@ No console, no branch escolhido, abra **Auth**:
 1. Ative o Neon Auth.
 2. Em **Settings → Auth**, ligue **Sign-up with Email** e **Verify at Sign-up**, no modo **código** (o app tem a tela para digitar o código de 6 números).
 3. Copie a **Auth URL**. Ela vai em `NEON_AUTH_BASE_URL`.
-4. Em **Domains**, adicione o domínio de produção do Vercel (no branch `main`). No branch `main`, desligue **Allow Localhost** (recomendação do checklist de produção do Neon); no `dev`, deixe ligado.
+4. Em **Domains**, adicione o domínio de produção do Vercel (no branch `main`; hoje: `https://fuellift.vercel.app` e `https://fuelift-ruddy.vercel.app`). No branch `main`, desligue **Allow Localhost** (recomendação do checklist de produção do Neon); no `dev`, deixe ligado.
 
 O app não expõe a API do Neon Auth diretamente (não há rota `/api/auth`). Login, cadastro, código, recuperação de senha e saída passam por Server Actions com limite de tentativas. A recuperação de senha usa o mesmo código de 6 números e, ao trocar a senha, encerra as outras sessões do usuário.
 
@@ -70,7 +72,7 @@ npm run db:gerar     # gera o SQL em drizzle/ a partir de lib/db/schema.ts
 npm run db:migrar    # aplica no banco de DATABASE_URL_MIGRACOES (.env.local = dev)
 ```
 
-Para produção, rode o `db:migrar` da sua máquina com `DATABASE_URL_MIGRACOES` apontando para o `main`, só depois de testar no `dev`. As migrations nunca rodam no build do Vercel.
+Para produção, use `npm run db:migrar:producao`, que lê a URL do dono do branch `production` em `.env.main.local` (fora do git). Rode só depois de testar no `dev`. As migrations nunca rodam no build do Vercel.
 
 ## 6. Testes
 

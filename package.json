@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:banco": "node scripts/testar-banco.mjs",
     "db:gerar": "drizzle-kit generate",
-    "db:migrar": "drizzle-kit migrate"
+    "db:migrar": "drizzle-kit migrate",
+    "db:migrar:producao": "node scripts/migrar-producao.mjs"
   },
   "dependencies": {
     "@neondatabase/auth": "0.5.0-beta",
