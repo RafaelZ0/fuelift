@@ -1,26 +1,44 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-fundo: #0b0b0a;
+  --color-superficie: #151513;
+  --color-texto: #f4f4ef;
+  --color-suave: #9a9a92;
+  --color-linha: #2a2a26;
+  --color-destaque: #d2f53c;
+  --color-erro: #ff7a66;
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--color-fundo);
+  color: var(--color-texto);
+  color-scheme: dark;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-feature-settings: "tnum" 1;
+}
+
+/* Campos sem setinhas nativas (regra da interface). */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* iOS dá zoom em campos com fonte menor que 16px. */
+input,
+select,
+textarea {
+  font-size: 1rem;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-destaque);
+  outline-offset: 2px;
 }
