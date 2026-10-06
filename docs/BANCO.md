@@ -17,9 +17,9 @@ No console, no branch escolhido, abra **Auth**:
 1. Ative o Neon Auth.
 2. Em **Settings → Auth**, ligue **Sign-up with Email** e **Verify at Sign-up**, no modo **código** (o app tem a tela para digitar o código de 6 números).
 3. Copie a **Auth URL**. Ela vai em `NEON_AUTH_BASE_URL`.
-4. Em **Domains**, adicione o domínio de produção do Vercel (no branch `main`) e `localhost` (no branch `dev`), se o console pedir.
+4. Em **Domains**, adicione o domínio de produção do Vercel (no branch `main`). No branch `main`, desligue **Allow Localhost** (recomendação do checklist de produção do Neon); no `dev`, deixe ligado.
 
-O app não expõe a API do Neon Auth diretamente. Login, cadastro, código e saída passam por Server Actions com limite de tentativas.
+O app não expõe a API do Neon Auth diretamente (não há rota `/api/auth`). Login, cadastro, código, recuperação de senha e saída passam por Server Actions com limite de tentativas. A recuperação de senha usa o mesmo código de 6 números e, ao trocar a senha, encerra as outras sessões do usuário.
 
 ## 3. Papel do app com permissão mínima
 
@@ -54,9 +54,11 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 | `DATABASE_URL_MIGRACOES` | `neondb_owner` @ dev, **sem** pooler | `neondb_owner` @ test, sem pooler | **não configurar** | **não configurar** |
 | `NEON_AUTH_BASE_URL` | Auth URL do dev | Auth URL do test (opcional) | Auth URL do main | Auth URL do dev |
 | `NEON_AUTH_COOKIE_SECRET` | segredo A | qualquer, 32+ | segredo B | segredo C |
+| `LIMITES_HMAC_KEY` | chave D | chave E | chave F | chave G |
 | `ADMIN_EMAILS` | seu e-mail | — | seu e-mail | seu e-mail |
 | `BANCO_DE_TESTE` | — | `sim` | — | — |
 
+- `LIMITES_HMAC_KEY` é a chave do HMAC-SHA256 que esconde e-mail e IP na tabela `limites`. Sem ela (ou com menos de 32 caracteres), login, cadastro e recuperação de senha ficam bloqueados.
 - Gere cada segredo com `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Use um segredo diferente em cada ambiente.
 - Nenhuma variável começa com `NEXT_PUBLIC_`.
 - No Vercel, **não** ative a integração do Neon que cria um branch por preview. Os previews devem usar o branch `dev`.
