@@ -11,7 +11,7 @@ export function normalizarBusca(texto: string): string {
     .normalize("NFD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()
-    .replace(/[^a-z0-9%,.\- ]+/g, " ")
+    .replace(/[^a-z0-9%]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
@@ -19,4 +19,9 @@ export function normalizarBusca(texto: string): string {
 /** Escapa os curingas do LIKE (% e _) para que o texto do usuário seja literal. */
 export function escaparLike(texto: string): string {
   return texto.replace(/[\\%_]/g, (c) => `\\${c}`);
+}
+
+/** Palavras do termo normalizado (até 6), usadas para exigir que todas apareçam no nome. */
+export function palavrasDaBusca(termoNormalizado: string): string[] {
+  return termoNormalizado.split(" ").filter(Boolean).slice(0, 6);
 }

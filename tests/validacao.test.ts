@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { cadastroSchema, entrarSchema, novaSenhaSchema, recuperarSchema, verificarSchema } from "@/lib/validacao/auth";
+import { adicionarSchema, alimentoUsuarioSchema, buscaSchema, medidaSchema } from "@/lib/validacao/comida";
 import { metaSchema } from "@/lib/validacao/metas";
+import { hojeSaoPaulo } from "@/lib/datas";
+import { somarDias } from "@/lib/datas";
 import { perfilSchema } from "@/lib/validacao/perfil";
 
 const perfilVazio = {
@@ -122,5 +125,62 @@ describe("autenticação", () => {
     ["código inválido na nova senha", novaSenhaSchema, { email: "a@b.com", codigo: "abc", senha: "1234567890", confirmacao: "1234567890" }],
   ] as const)("recusa %s", (_, schema, dados) => {
     expect(schema.safeParse(dados).success).toBe(false);
+  });
+});
+
+const UUID = "0f8fad5b-d9cb-469f-a165-70867728950e";
+
+describe("comida", () => {
+  const base = { data: "2026-01-10", refeicao: "almoco", tipo: "base", alimentoId: UUID };
+
+  it("aceita gramas e medida válidas", () => {
+    expect(adicionarSchema.safeParse({ ...base, quantidade: { modo: "gramas", gramas: "150,5" } }).success).toBe(true);
+    expect(adicionarSchema.safeParse({ ...base, quantidade: { modo: "medida", medidaId: UUID, quantidade: "1,5" } }).success).toBe(true);
+  });
+
+  it.each([
+    ["gramas 0", { ...base, quantidade: { modo: "gramas", gramas: "0" } }],
+    ["gramas 5001", { ...base, quantidade: { modo: "gramas", gramas: "5001" } }],
+    ["gramas negativas", { ...base, quantidade: { modo: "gramas", gramas: "-5" } }],
+    ["gramas com texto", { ...base, quantidade: { modo: "gramas", gramas: "1e3" } }],
+    ["quantidade de medida 51", { ...base, quantidade: { modo: "medida", medidaId: UUID, quantidade: "51" } }],
+    ["refeição inválida", { ...base, refeicao: "brunch", quantidade: { modo: "gramas", gramas: "100" } }],
+    ["tipo inválido", { ...base, tipo: "outro", quantidade: { modo: "gramas", gramas: "100" } }],
+    ["id inválido", { ...base, alimentoId: "1 or 1=1", quantidade: { modo: "gramas", gramas: "100" } }],
+    ["data futura", { ...base, data: "2999-01-01", quantidade: { modo: "gramas", gramas: "100" } }],
+    ["data antiga", { ...base, data: "1999-12-31", quantidade: { modo: "gramas", gramas: "100" } }],
+  ])("recusa %s", (_, dados) => {
+    expect(adicionarSchema.safeParse(dados).success).toBe(false);
+  });
+
+  it("hoje é aceito e amanhã não", () => {
+    const q = { modo: "gramas", gramas: "100" };
+    expect(adicionarSchema.safeParse({ ...base, data: hojeSaoPaulo(), quantidade: q }).success).toBe(true);
+    expect(adicionarSchema.safeParse({ ...base, data: somarDias(hojeSaoPaulo(), 1), quantidade: q }).success).toBe(false);
+  });
+
+  it.each([
+    ["gramas 0", { tipo: "base", alimentoId: UUID, nome: "concha", gramas: "0" }],
+    ["gramas 2001", { tipo: "base", alimentoId: UUID, nome: "concha", gramas: "2001" }],
+    ["nome vazio", { tipo: "base", alimentoId: UUID, nome: " ", gramas: "140" }],
+    ["nome com 41", { tipo: "base", alimentoId: UUID, nome: "x".repeat(41), gramas: "140" }],
+  ])("medida: recusa %s", (_, dados) => {
+    expect(medidaSchema.safeParse(dados).success).toBe(false);
+  });
+
+  it("rótulo: aceita porção qualquer e recusa limites", () => {
+    const ok = { nome: "Granola", marca: "", porcaoG: "40", kcal: "180", proteinaG: "4", carboG: "28", gorduraG: "5,5", fibraG: "3", sodioMg: "" };
+    expect(alimentoUsuarioSchema.safeParse(ok).success).toBe(true);
+    expect(alimentoUsuarioSchema.safeParse({ ...ok, porcaoG: "0" }).success).toBe(false);
+    expect(alimentoUsuarioSchema.safeParse({ ...ok, nome: "" }).success).toBe(false);
+    expect(alimentoUsuarioSchema.safeParse({ ...ok, nome: "x".repeat(121) }).success).toBe(false);
+    expect(alimentoUsuarioSchema.safeParse({ ...ok, kcal: "" }).success).toBe(false);
+    expect(alimentoUsuarioSchema.safeParse({ ...ok, proteinaG: "abc" }).success).toBe(false);
+  });
+
+  it("busca: tamanho do texto", () => {
+    expect(buscaSchema.safeParse("a").success).toBe(false);
+    expect(buscaSchema.safeParse("x".repeat(61)).success).toBe(false);
+    expect(buscaSchema.safeParse("arroz").success).toBe(true);
   });
 });
