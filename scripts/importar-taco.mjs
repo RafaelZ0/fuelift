@@ -58,6 +58,7 @@ export function extrairAlimentos(buf) {
     const a = String(celulas.A ?? "").trim();
     const b = String(celulas.B ?? "").replace(/\s+/g, " ").trim();
     if (/^\d+$/.test(a)) {
+      /** @type {{ codigo: string, nome: string, grupo: string | null, marcacoes: Record<string, object>, [campo: string]: unknown }} */
       const item = { codigo: a, nome: b, grupo, marcacoes: {} };
       try {
         if (b.length < 1 || b.length > 200) throw new Error("nome vazio ou longo demais");
