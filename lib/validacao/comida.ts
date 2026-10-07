@@ -14,6 +14,17 @@ export const ROTULOS_REFEICAO: Record<Refeicao, string> = {
   ceia: "Ceia",
 };
 
+/** Artigo de cada refeição ("o almoço", "a ceia"), para frases como "Adicionar ao/à". */
+const FEMININAS: ReadonlySet<Refeicao> = new Set(["ceia"]);
+
+export function comArtigo(r: Refeicao, preposicao: "a" | "em" | "para"): string {
+  const nome = ROTULOS_REFEICAO[r].toLowerCase();
+  const fem = FEMININAS.has(r);
+  if (preposicao === "a") return `${fem ? "à" : "ao"} ${nome}`;
+  if (preposicao === "em") return `${fem ? "na" : "no"} ${nome}`;
+  return `para ${fem ? "a" : "o"} ${nome}`;
+}
+
 export const TIPOS_ALIMENTO = ["base", "usuario"] as const;
 export type TipoAlimento = (typeof TIPOS_ALIMENTO)[number];
 

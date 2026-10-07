@@ -1,6 +1,6 @@
 import { exigirUsuario } from "@/lib/auth/sessao";
 import { hojeSaoPaulo, somarDias } from "@/lib/datas";
-import { dataDiario, refeicao as refeicaoSchema, REFEICOES, ROTULOS_REFEICAO } from "@/lib/validacao/comida";
+import { comArtigo, dataDiario, refeicao as refeicaoSchema, REFEICOES, ROTULOS_REFEICAO } from "@/lib/validacao/comida";
 import { Voltar } from "../comum";
 import { FormCopiar } from "./formulario";
 
@@ -15,7 +15,7 @@ export default async function PaginaCopiar(props: PageProps<"/comida/copiar">) {
   return (
     <div className="space-y-6">
       <Voltar href={`/comida?data=${data}`} />
-      <h1 className="text-3xl font-black">Copiar para o {ROTULOS_REFEICAO[ref].toLowerCase()}</h1>
+      <h1 className="text-3xl font-black">Copiar {comArtigo(ref, "para")}</h1>
       <p className="text-suave">Os alimentos e as quantidades são copiados, e os nutrientes são recalculados como registros novos deste dia.</p>
       <FormCopiar
         paraData={data}

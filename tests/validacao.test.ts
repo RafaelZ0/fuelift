@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cadastroSchema, entrarSchema, novaSenhaSchema, recuperarSchema, verificarSchema } from "@/lib/validacao/auth";
-import { adicionarSchema, alimentoUsuarioSchema, buscaSchema, medidaSchema } from "@/lib/validacao/comida";
+import { adicionarSchema, alimentoUsuarioSchema, buscaSchema, comArtigo, medidaSchema } from "@/lib/validacao/comida";
 import { metaSchema } from "@/lib/validacao/metas";
 import { hojeSaoPaulo } from "@/lib/datas";
 import { somarDias } from "@/lib/datas";
@@ -182,5 +182,14 @@ describe("comida", () => {
     expect(buscaSchema.safeParse("a").success).toBe(false);
     expect(buscaSchema.safeParse("x".repeat(61)).success).toBe(false);
     expect(buscaSchema.safeParse("arroz").success).toBe(true);
+  });
+});
+
+describe("frases das refeições", () => {
+  it("usa o artigo certo", () => {
+    expect(comArtigo("almoco", "a")).toBe("ao almoço");
+    expect(comArtigo("ceia", "a")).toBe("à ceia");
+    expect(comArtigo("ceia", "em")).toBe("na ceia");
+    expect(comArtigo("cafe", "para")).toBe("para o café da manhã");
   });
 });

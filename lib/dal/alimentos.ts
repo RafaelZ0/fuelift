@@ -34,6 +34,7 @@ export type AlimentoDetalhe = {
 };
 
 const RECENTES_DIAS = 60;
+const SEMELHANCA_MIN = 0.5;
 
 /**
  * Busca na TACO e nos alimentos do próprio usuário. Todas as palavras precisam
@@ -46,10 +47,17 @@ export async function buscarAlimentos(userId: string, termo: string): Promise<Al
   const palavras = palavrasDaBusca(q);
   if (palavras.length === 0) return [];
 
+  // Cada palavra precisa aparecer no nome, exata ou parecida (erro de digitação, pg_trgm).
   const todas = (coluna: ReturnType<typeof sql>) =>
     sql.join(
-      palavras.map((p) => sql`${coluna} like ${`%${escaparLike(p)}%`}`),
+      palavras.map((p) => sql`(${coluna} like ${`%${escaparLike(p)}%`} or word_similarity(${p}, ${coluna}) >= ${SEMELHANCA_MIN})`),
       sql` and `,
+    );
+  // Pontuação: soma da semelhança de cada palavra (palavra exata = 1).
+  const pontos = (coluna: ReturnType<typeof sql>) =>
+    sql.join(
+      palavras.map((p) => sql`word_similarity(${p}, ${coluna})`),
+      sql` + `,
     );
 
   const linhas = await db.execute<{
@@ -68,14 +76,13 @@ export async function buscarAlimentos(userId: string, termo: string): Promise<Al
       group by alimento_base_id, alimento_usuario_id
     ),
     candidatos as (
-      select 'base'::text as tipo, b.id, b.nome, null::text as marca, b.kcal, b.nome_busca
+      select 'base'::text as tipo, b.id, b.nome, null::text as marca, b.kcal, b.nome_busca, ${pontos(sql`b.nome_busca`)} as pontos
       from alimentos_base b
-      where (${todas(sql`b.nome_busca`)}) or word_similarity(${q}, b.nome_busca) >= 0.45
+      where ${todas(sql`b.nome_busca`)}
       union all
-      select 'usuario'::text, u.id, u.nome, u.marca, u.kcal, u.nome_busca
+      select 'usuario'::text, u.id, u.nome, u.marca, u.kcal, u.nome_busca, ${pontos(sql`u.nome_busca`)}
       from alimentos_usuario u
-      where u.user_id = ${userId}
-        and ((${todas(sql`u.nome_busca`)}) or word_similarity(${q}, u.nome_busca) >= 0.45)
+      where u.user_id = ${userId} and ${todas(sql`u.nome_busca`)}
     )
     select c.tipo, c.id, c.nome, c.marca, c.kcal,
       exists (
@@ -85,8 +92,8 @@ export async function buscarAlimentos(userId: string, termo: string): Promise<Al
       r.ultimo is not null as recente
     from candidatos c
     left join recentes r on (r.alimento_base_id = c.id or r.alimento_usuario_id = c.id)
-    order by (r.ultimo is not null) desc, favorito desc, (c.nome_busca like ${`${escaparLike(q)}%`}) desc,
-      word_similarity(${q}, c.nome_busca) desc, length(c.nome) asc
+    order by (r.ultimo is not null) desc, favorito desc, round(c.pontos::numeric, 1) desc,
+      (c.nome_busca like ${`${escaparLike(palavras[0])}%`}) desc, length(c.nome) asc
     limit ${BUSCA_LIMITE}
   `);
 

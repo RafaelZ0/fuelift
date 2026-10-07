@@ -31,7 +31,8 @@ export function FormAdicionar({
   const [qtdTxt, setQtdTxt] = useState("1");
   const [medidaId, setMedidaId] = useState(medidas[0]?.id ?? "");
 
-  const medida = medidas.find((x) => x.id === medidaId);
+  // Sem escolha válida (ex.: medida recém-criada), usa a primeira da lista.
+  const medida = medidas.find((x) => x.id === medidaId) ?? medidas[0];
   // Prévia no navegador; o servidor recalcula ao salvar.
   const gramas = modo === "gramas" ? numero(gramasTxt) : medida ? gramasDaMedida(medida.gramas, numero(qtdTxt)) : 0;
   const previa = gramas > 0 ? calcularNutrientes(alimento, gramas) : null;
@@ -88,7 +89,7 @@ export function FormAdicionar({
                     type="radio"
                     name="medidaId"
                     value={x.id}
-                    checked={medidaId === x.id}
+                    checked={medida?.id === x.id}
                     onChange={() => setMedidaId(x.id)}
                     className="peer sr-only"
                   />
@@ -136,7 +137,7 @@ export function FormAdicionar({
       </div>
 
       {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
-      <BotaoEnviar pendente="Adicionando…">Adicionar ao {rotuloRefeicao.toLowerCase()}</BotaoEnviar>
+      <BotaoEnviar pendente="Adicionando…">Adicionar {rotuloRefeicao}</BotaoEnviar>
     </form>
   );
 }

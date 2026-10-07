@@ -20,7 +20,8 @@ export async function listarRefeicoesSalvas(userId: string) {
     .select({
       id: refeicoesSalvas.id,
       nome: refeicoesSalvas.nome,
-      itens: sql<number>`(select count(*)::int from ${refeicoesSalvasItens} i where i.refeicao_salva_id = ${refeicoesSalvas.id} and i.user_id = ${userId})`,
+      // Coluna qualificada à mão: dentro do select o Drizzle não prefixa a tabela.
+      itens: sql<number>`(select count(*)::int from refeicoes_salvas_itens i where i.refeicao_salva_id = "refeicoes_salvas"."id" and i.user_id = ${userId})`,
     })
     .from(refeicoesSalvas)
     .where(eq(refeicoesSalvas.userId, userId))

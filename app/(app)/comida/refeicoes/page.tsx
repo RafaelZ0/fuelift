@@ -1,7 +1,7 @@
 import { exigirUsuario } from "@/lib/auth/sessao";
 import { listarRefeicoesSalvas } from "@/lib/dal/refeicoes-salvas";
 import { hojeSaoPaulo } from "@/lib/datas";
-import { dataDiario, refeicao as refeicaoSchema, ROTULOS_REFEICAO } from "@/lib/validacao/comida";
+import { comArtigo, dataDiario, refeicao as refeicaoSchema } from "@/lib/validacao/comida";
 import { apagarRefeicaoSalva } from "../actions";
 import { Voltar } from "../comum";
 import { UsarRefeicao } from "./usar";
@@ -31,7 +31,7 @@ export default async function PaginaRefeicoes(props: PageProps<"/comida/refeicoe
               <span className="text-sm text-suave">{s.itens} itens</span>
             </div>
             {ref ? (
-              <UsarRefeicao refeicaoSalvaId={s.id} data={data} refeicao={ref} rotulo={`Usar no ${ROTULOS_REFEICAO[ref].toLowerCase()}`} />
+              <UsarRefeicao refeicaoSalvaId={s.id} data={data} refeicao={ref} rotulo={`Usar ${comArtigo(ref, "em")}`} />
             ) : null}
             <form action={apagarRefeicaoSalva}>
               <input type="hidden" name="refeicaoSalvaId" value={s.id} />

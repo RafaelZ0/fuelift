@@ -30,16 +30,14 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
   return (
     <div className="space-y-10">
       <header className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-4xl font-black tracking-tight">Comida</h1>
-          <div className="flex gap-2 text-sm font-semibold">
-            <Link href="/comida/meus-alimentos" className="flex min-h-11 items-center rounded-full border-2 border-linha px-3 text-suave">
-              Meus alimentos
-            </Link>
-            <Link href={`/comida/refeicoes?data=${data}`} className="flex min-h-11 items-center rounded-full border-2 border-linha px-3 text-suave">
-              Refeições
-            </Link>
-          </div>
+        <h1 className="text-4xl font-black tracking-tight">Comida</h1>
+        <div className="flex gap-2 text-sm font-semibold">
+          <Link href="/comida/meus-alimentos" className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-linha px-4 text-suave">
+            Meus alimentos
+          </Link>
+          <Link href={`/comida/refeicoes?data=${data}`} className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-linha px-4 text-suave">
+            Refeições salvas
+          </Link>
         </div>
         <nav aria-label="Dia" className="flex items-center justify-between">
           <Link href={`/comida?data=${somarDias(data, -1)}`} aria-label="Dia anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">

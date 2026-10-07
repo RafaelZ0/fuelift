@@ -6,7 +6,7 @@ import { ehFavorito, listarMedidas } from "@/lib/dal/medidas";
 import { hojeSaoPaulo } from "@/lib/datas";
 import type { Marcacoes } from "@/lib/db/schema";
 import { formatarGramas, formatarKcal } from "@/lib/nutricao";
-import { dataDiario, id as idSchema, refeicao as refeicaoSchema, ROTULOS_REFEICAO, tipoAlimento } from "@/lib/validacao/comida";
+import { comArtigo, dataDiario, id as idSchema, refeicao as refeicaoSchema, tipoAlimento } from "@/lib/validacao/comida";
 import { favoritar } from "../../../actions";
 import { CitacaoTaco, Voltar, voltaQuery } from "../../../comum";
 import { FormAdicionar, Medidas } from "./formularios";
@@ -102,7 +102,7 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
           medidas={medidas.map((x) => ({ id: x.id, nome: x.nome, gramas: x.gramas }))}
           data={data}
           refeicao={ref}
-          rotuloRefeicao={ROTULOS_REFEICAO[ref]}
+          rotuloRefeicao={comArtigo(ref, "a")}
         />
       )}
 
@@ -112,7 +112,7 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
           {[
             ["Calorias", <Valor key="k" v={alimento.kcal} marca={m.kcal} unidade="kcal" kcal />],
             ["Proteína", <Valor key="p" v={alimento.proteinaG} marca={m.proteina_g} unidade="g" />],
-            ["Carboidrato (inclui fibra)", <Valor key="c" v={alimento.carboG} marca={m.carbo_g} unidade="g" />],
+            [alimento.tipo === "base" ? "Carboidrato (inclui fibra)" : "Carboidrato", <Valor key="c" v={alimento.carboG} marca={m.carbo_g} unidade="g" />],
             ["Gordura", <Valor key="g" v={alimento.gorduraG} marca={m.gordura_g} unidade="g" />],
             ["Fibra", <Valor key="f" v={alimento.fibraG} marca={m.fibra_g} unidade="g" />],
             ["Sódio", <Valor key="s" v={alimento.sodioMg} marca={m.sodio_mg} unidade="mg" kcal />],
