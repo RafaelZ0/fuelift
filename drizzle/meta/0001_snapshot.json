@@ -1,0 +1,417 @@
+{
+  "id": "5d1608c8-3715-44b2-85fe-a1eb4146442d",
+  "prevId": "5d507628-db50-4906-a453-b90a407b9b00",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.acessos": {
+      "name": "acessos",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "decidido_em": {
+          "name": "decidido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sessoes_validas_desde": {
+          "name": "sessoes_validas_desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "acessos_status": {
+          "name": "acessos_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "acessos_email": {
+          "name": "acessos_email",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "acessos_email_check": {
+          "name": "acessos_email_check",
+          "value": "char_length(\"acessos\".\"email\") <= 320"
+        },
+        "acessos_status_check": {
+          "name": "acessos_status_check",
+          "value": "\"acessos\".\"status\" in ('pendente', 'aprovado', 'recusado')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.limites": {
+      "name": "limites",
+      "schema": "",
+      "columns": {
+        "chave": {
+          "name": "chave",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "janela": {
+          "name": "janela",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contagem": {
+          "name": "contagem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "limites_janela": {
+          "name": "limites_janela",
+          "columns": [
+            {
+              "expression": "janela",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "limites_chave_janela_pk": {
+          "name": "limites_chave_janela_pk",
+          "columns": [
+            "chave",
+            "janela"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.metas": {
+      "name": "metas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vigente_desde": {
+          "name": "vigente_desde",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proteina_g": {
+          "name": "proteina_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carbo_g": {
+          "name": "carbo_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gordura_g": {
+          "name": "gordura_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agua_ml": {
+          "name": "agua_ml",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "peso_meta_kg": {
+          "name": "peso_meta_kg",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_meta": {
+          "name": "data_meta",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "metas_user_vigencia": {
+          "name": "metas_user_vigencia",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "vigente_desde",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "metas_user_id_perfis_user_id_fk": {
+          "name": "metas_user_id_perfis_user_id_fk",
+          "tableFrom": "metas",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "metas_user_id_vigente_desde_key": {
+          "name": "metas_user_id_vigente_desde_key",
+          "columns": [
+            "user_id",
+            "vigente_desde"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "metas_kcal_check": {
+          "name": "metas_kcal_check",
+          "value": "\"metas\".\"kcal\" between 500 and 10000"
+        },
+        "metas_proteina_g_check": {
+          "name": "metas_proteina_g_check",
+          "value": "\"metas\".\"proteina_g\" between 0 and 500"
+        },
+        "metas_carbo_g_check": {
+          "name": "metas_carbo_g_check",
+          "value": "\"metas\".\"carbo_g\" between 0 and 1500"
+        },
+        "metas_gordura_g_check": {
+          "name": "metas_gordura_g_check",
+          "value": "\"metas\".\"gordura_g\" between 0 and 500"
+        },
+        "metas_agua_ml_check": {
+          "name": "metas_agua_ml_check",
+          "value": "\"metas\".\"agua_ml\" between 0 and 10000"
+        },
+        "metas_peso_meta_kg_check": {
+          "name": "metas_peso_meta_kg_check",
+          "value": "\"metas\".\"peso_meta_kg\" between 20 and 400"
+        },
+        "metas_observacao_check": {
+          "name": "metas_observacao_check",
+          "value": "char_length(\"metas\".\"observacao\") <= 500"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.perfis": {
+      "name": "perfis",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_nascimento": {
+          "name": "data_nascimento",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "altura_cm": {
+          "name": "altura_cm",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_atividade": {
+          "name": "nivel_atividade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inicio_plano": {
+          "name": "inicio_plano",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "perfis_nome_check": {
+          "name": "perfis_nome_check",
+          "value": "char_length(\"perfis\".\"nome\") <= 80"
+        },
+        "perfis_data_nascimento_check": {
+          "name": "perfis_data_nascimento_check",
+          "value": "\"perfis\".\"data_nascimento\" >= date '1900-01-01'"
+        },
+        "perfis_sexo_check": {
+          "name": "perfis_sexo_check",
+          "value": "\"perfis\".\"sexo\" in ('masculino', 'feminino')"
+        },
+        "perfis_altura_cm_check": {
+          "name": "perfis_altura_cm_check",
+          "value": "\"perfis\".\"altura_cm\" between 100 and 250"
+        },
+        "perfis_nivel_atividade_check": {
+          "name": "perfis_nivel_atividade_check",
+          "value": "\"perfis\".\"nivel_atividade\" in ('sedentario', 'leve', 'moderado', 'alto', 'muito_alto')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

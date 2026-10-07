@@ -8,6 +8,27 @@
       "when": 1791312332772,
       "tag": "0000_fase1_base",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791388252678,
+      "tag": "0001_fase2_extensao_trgm",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791388256702,
+      "tag": "0002_fase2_alimentos_diario",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791388261056,
+      "tag": "0003_fase2_permissoes_fks",
+      "breakpoints": true
     }
   ]
 }

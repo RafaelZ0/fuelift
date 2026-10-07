@@ -1,0 +1,1645 @@
+{
+  "id": "50e39a93-4a74-440f-9f50-ff11c6b8a64a",
+  "prevId": "94f294b1-f54b-4f8d-a906-772aec51d069",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.acessos": {
+      "name": "acessos",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pendente'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "decidido_em": {
+          "name": "decidido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sessoes_validas_desde": {
+          "name": "sessoes_validas_desde",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "acessos_status": {
+          "name": "acessos_status",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "acessos_email": {
+          "name": "acessos_email",
+          "columns": [
+            {
+              "expression": "email",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "acessos_email_check": {
+          "name": "acessos_email_check",
+          "value": "char_length(\"acessos\".\"email\") <= 320"
+        },
+        "acessos_status_check": {
+          "name": "acessos_status_check",
+          "value": "\"acessos\".\"status\" in ('pendente', 'aprovado', 'recusado')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.alimentos_base": {
+      "name": "alimentos_base",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "fonte": {
+          "name": "fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edicao": {
+          "name": "edicao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "codigo_fonte": {
+          "name": "codigo_fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_busca": {
+          "name": "nome_busca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "grupo": {
+          "name": "grupo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proteina_g": {
+          "name": "proteina_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carbo_g": {
+          "name": "carbo_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gordura_g": {
+          "name": "gordura_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fibra_g": {
+          "name": "fibra_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sodio_mg": {
+          "name": "sodio_mg",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "marcacoes": {
+          "name": "marcacoes",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "alimentos_base_nome_busca_trgm": {
+          "name": "alimentos_base_nome_busca_trgm",
+          "columns": [
+            {
+              "expression": "nome_busca",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "gin",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "alimentos_base_fonte_edicao_fontes_alimentos_fonte_edicao_fk": {
+          "name": "alimentos_base_fonte_edicao_fontes_alimentos_fonte_edicao_fk",
+          "tableFrom": "alimentos_base",
+          "columnsFrom": [
+            "fonte",
+            "edicao"
+          ],
+          "tableTo": "fontes_alimentos",
+          "columnsTo": [
+            "fonte",
+            "edicao"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "alimentos_base_fonte_codigo_key": {
+          "name": "alimentos_base_fonte_codigo_key",
+          "columns": [
+            "fonte",
+            "codigo_fonte"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "alimentos_base_fonte_check": {
+          "name": "alimentos_base_fonte_check",
+          "value": "\"alimentos_base\".\"fonte\" in ('taco')"
+        },
+        "alimentos_base_nome_check": {
+          "name": "alimentos_base_nome_check",
+          "value": "char_length(\"alimentos_base\".\"nome\") between 1 and 200"
+        },
+        "alimentos_base_kcal_check": {
+          "name": "alimentos_base_kcal_check",
+          "value": "\"alimentos_base\".\"kcal\" between 0 and 900"
+        },
+        "alimentos_base_proteina_check": {
+          "name": "alimentos_base_proteina_check",
+          "value": "\"alimentos_base\".\"proteina_g\" between 0 and 100"
+        },
+        "alimentos_base_carbo_check": {
+          "name": "alimentos_base_carbo_check",
+          "value": "\"alimentos_base\".\"carbo_g\" between 0 and 100"
+        },
+        "alimentos_base_gordura_check": {
+          "name": "alimentos_base_gordura_check",
+          "value": "\"alimentos_base\".\"gordura_g\" between 0 and 100"
+        },
+        "alimentos_base_fibra_check": {
+          "name": "alimentos_base_fibra_check",
+          "value": "\"alimentos_base\".\"fibra_g\" between 0 and 100"
+        },
+        "alimentos_base_sodio_check": {
+          "name": "alimentos_base_sodio_check",
+          "value": "\"alimentos_base\".\"sodio_mg\" between 0 and 40000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.alimentos_usuario": {
+      "name": "alimentos_usuario",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome_busca": {
+          "name": "nome_busca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "marca": {
+          "name": "marca",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proteina_g": {
+          "name": "proteina_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carbo_g": {
+          "name": "carbo_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gordura_g": {
+          "name": "gordura_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fibra_g": {
+          "name": "fibra_g",
+          "type": "numeric(6, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sodio_mg": {
+          "name": "sodio_mg",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origem": {
+          "name": "origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'rotulo'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "alimentos_usuario_user": {
+          "name": "alimentos_usuario_user",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "alimentos_usuario_nome_busca_trgm": {
+          "name": "alimentos_usuario_nome_busca_trgm",
+          "columns": [
+            {
+              "expression": "nome_busca",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last",
+              "opclass": "gin_trgm_ops"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "gin",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "alimentos_usuario_user_id_perfis_user_id_fk": {
+          "name": "alimentos_usuario_user_id_perfis_user_id_fk",
+          "tableFrom": "alimentos_usuario",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "alimentos_usuario_id_user_key": {
+          "name": "alimentos_usuario_id_user_key",
+          "columns": [
+            "id",
+            "user_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "alimentos_usuario_nome_check": {
+          "name": "alimentos_usuario_nome_check",
+          "value": "char_length(\"alimentos_usuario\".\"nome\") between 1 and 120"
+        },
+        "alimentos_usuario_marca_check": {
+          "name": "alimentos_usuario_marca_check",
+          "value": "char_length(\"alimentos_usuario\".\"marca\") <= 80"
+        },
+        "alimentos_usuario_kcal_check": {
+          "name": "alimentos_usuario_kcal_check",
+          "value": "\"alimentos_usuario\".\"kcal\" between 0 and 900"
+        },
+        "alimentos_usuario_proteina_check": {
+          "name": "alimentos_usuario_proteina_check",
+          "value": "\"alimentos_usuario\".\"proteina_g\" between 0 and 100"
+        },
+        "alimentos_usuario_carbo_check": {
+          "name": "alimentos_usuario_carbo_check",
+          "value": "\"alimentos_usuario\".\"carbo_g\" between 0 and 100"
+        },
+        "alimentos_usuario_gordura_check": {
+          "name": "alimentos_usuario_gordura_check",
+          "value": "\"alimentos_usuario\".\"gordura_g\" between 0 and 100"
+        },
+        "alimentos_usuario_fibra_check": {
+          "name": "alimentos_usuario_fibra_check",
+          "value": "\"alimentos_usuario\".\"fibra_g\" between 0 and 100"
+        },
+        "alimentos_usuario_sodio_check": {
+          "name": "alimentos_usuario_sodio_check",
+          "value": "\"alimentos_usuario\".\"sodio_mg\" between 0 and 40000"
+        },
+        "alimentos_usuario_macros_check": {
+          "name": "alimentos_usuario_macros_check",
+          "value": "coalesce(\"alimentos_usuario\".\"proteina_g\", 0) + coalesce(\"alimentos_usuario\".\"carbo_g\", 0) + coalesce(\"alimentos_usuario\".\"gordura_g\", 0) <= 100.5"
+        },
+        "alimentos_usuario_origem_check": {
+          "name": "alimentos_usuario_origem_check",
+          "value": "\"alimentos_usuario\".\"origem\" in ('rotulo', 'ia_estimativa')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.favoritos": {
+      "name": "favoritos",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alimento_base_id": {
+          "name": "alimento_base_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alimento_usuario_id": {
+          "name": "alimento_usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "favoritos_base_key": {
+          "name": "favoritos_base_key",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "alimento_base_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"favoritos\".\"alimento_base_id\" is not null",
+          "concurrently": false
+        },
+        "favoritos_usuario_key": {
+          "name": "favoritos_usuario_key",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "alimento_usuario_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"favoritos\".\"alimento_usuario_id\" is not null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "favoritos_user_id_perfis_user_id_fk": {
+          "name": "favoritos_user_id_perfis_user_id_fk",
+          "tableFrom": "favoritos",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "favoritos_alimento_base_id_alimentos_base_id_fk": {
+          "name": "favoritos_alimento_base_id_alimentos_base_id_fk",
+          "tableFrom": "favoritos",
+          "columnsFrom": [
+            "alimento_base_id"
+          ],
+          "tableTo": "alimentos_base",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "favoritos_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk": {
+          "name": "favoritos_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk",
+          "tableFrom": "favoritos",
+          "columnsFrom": [
+            "alimento_usuario_id",
+            "user_id"
+          ],
+          "tableTo": "alimentos_usuario",
+          "columnsTo": [
+            "id",
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "favoritos_alimento_check": {
+          "name": "favoritos_alimento_check",
+          "value": "num_nonnulls(\"favoritos\".\"alimento_base_id\", \"favoritos\".\"alimento_usuario_id\") = 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.fontes_alimentos": {
+      "name": "fontes_alimentos",
+      "schema": "",
+      "columns": {
+        "fonte": {
+          "name": "fonte",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "edicao": {
+          "name": "edicao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "termos": {
+          "name": "termos",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "citacao": {
+          "name": "citacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "arquivo_sha256": {
+          "name": "arquivo_sha256",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "importado_em": {
+          "name": "importado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "fontes_alimentos_fonte_edicao_pk": {
+          "name": "fontes_alimentos_fonte_edicao_pk",
+          "columns": [
+            "fonte",
+            "edicao"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fontes_alimentos_fonte_check": {
+          "name": "fontes_alimentos_fonte_check",
+          "value": "\"fontes_alimentos\".\"fonte\" in ('taco', 'usda')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.limites": {
+      "name": "limites",
+      "schema": "",
+      "columns": {
+        "chave": {
+          "name": "chave",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "janela": {
+          "name": "janela",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "contagem": {
+          "name": "contagem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "limites_janela": {
+          "name": "limites_janela",
+          "columns": [
+            {
+              "expression": "janela",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "limites_chave_janela_pk": {
+          "name": "limites_chave_janela_pk",
+          "columns": [
+            "chave",
+            "janela"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.medidas": {
+      "name": "medidas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alimento_base_id": {
+          "name": "alimento_base_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alimento_usuario_id": {
+          "name": "alimento_usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gramas": {
+          "name": "gramas",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "medidas_user": {
+          "name": "medidas_user",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "medidas_base_nome_key": {
+          "name": "medidas_base_nome_key",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "alimento_base_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"nome\")",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"medidas\".\"alimento_base_id\" is not null",
+          "concurrently": false
+        },
+        "medidas_usuario_nome_key": {
+          "name": "medidas_usuario_nome_key",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "alimento_usuario_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "lower(\"nome\")",
+              "isExpression": true,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "with": {},
+          "method": "btree",
+          "where": "\"medidas\".\"alimento_usuario_id\" is not null",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "medidas_user_id_perfis_user_id_fk": {
+          "name": "medidas_user_id_perfis_user_id_fk",
+          "tableFrom": "medidas",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "medidas_alimento_base_id_alimentos_base_id_fk": {
+          "name": "medidas_alimento_base_id_alimentos_base_id_fk",
+          "tableFrom": "medidas",
+          "columnsFrom": [
+            "alimento_base_id"
+          ],
+          "tableTo": "alimentos_base",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "medidas_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk": {
+          "name": "medidas_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk",
+          "tableFrom": "medidas",
+          "columnsFrom": [
+            "alimento_usuario_id",
+            "user_id"
+          ],
+          "tableTo": "alimentos_usuario",
+          "columnsTo": [
+            "id",
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "medidas_nome_check": {
+          "name": "medidas_nome_check",
+          "value": "char_length(\"medidas\".\"nome\") between 1 and 40"
+        },
+        "medidas_gramas_check": {
+          "name": "medidas_gramas_check",
+          "value": "\"medidas\".\"gramas\" > 0 and \"medidas\".\"gramas\" <= 2000"
+        },
+        "medidas_alimento_check": {
+          "name": "medidas_alimento_check",
+          "value": "num_nonnulls(\"medidas\".\"alimento_base_id\", \"medidas\".\"alimento_usuario_id\") = 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.metas": {
+      "name": "metas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vigente_desde": {
+          "name": "vigente_desde",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "proteina_g": {
+          "name": "proteina_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carbo_g": {
+          "name": "carbo_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gordura_g": {
+          "name": "gordura_g",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "agua_ml": {
+          "name": "agua_ml",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "peso_meta_kg": {
+          "name": "peso_meta_kg",
+          "type": "numeric(5, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_meta": {
+          "name": "data_meta",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "observacao": {
+          "name": "observacao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "metas_user_vigencia": {
+          "name": "metas_user_vigencia",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "vigente_desde",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "metas_user_id_perfis_user_id_fk": {
+          "name": "metas_user_id_perfis_user_id_fk",
+          "tableFrom": "metas",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "metas_user_id_vigente_desde_key": {
+          "name": "metas_user_id_vigente_desde_key",
+          "columns": [
+            "user_id",
+            "vigente_desde"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "metas_kcal_check": {
+          "name": "metas_kcal_check",
+          "value": "\"metas\".\"kcal\" between 500 and 10000"
+        },
+        "metas_proteina_g_check": {
+          "name": "metas_proteina_g_check",
+          "value": "\"metas\".\"proteina_g\" between 0 and 500"
+        },
+        "metas_carbo_g_check": {
+          "name": "metas_carbo_g_check",
+          "value": "\"metas\".\"carbo_g\" between 0 and 1500"
+        },
+        "metas_gordura_g_check": {
+          "name": "metas_gordura_g_check",
+          "value": "\"metas\".\"gordura_g\" between 0 and 500"
+        },
+        "metas_agua_ml_check": {
+          "name": "metas_agua_ml_check",
+          "value": "\"metas\".\"agua_ml\" between 0 and 10000"
+        },
+        "metas_peso_meta_kg_check": {
+          "name": "metas_peso_meta_kg_check",
+          "value": "\"metas\".\"peso_meta_kg\" between 20 and 400"
+        },
+        "metas_observacao_check": {
+          "name": "metas_observacao_check",
+          "value": "char_length(\"metas\".\"observacao\") <= 500"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.perfis": {
+      "name": "perfis",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "data_nascimento": {
+          "name": "data_nascimento",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "sexo": {
+          "name": "sexo",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "altura_cm": {
+          "name": "altura_cm",
+          "type": "numeric(4, 1)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nivel_atividade": {
+          "name": "nivel_atividade",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "inicio_plano": {
+          "name": "inicio_plano",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "perfis_nome_check": {
+          "name": "perfis_nome_check",
+          "value": "char_length(\"perfis\".\"nome\") <= 80"
+        },
+        "perfis_data_nascimento_check": {
+          "name": "perfis_data_nascimento_check",
+          "value": "\"perfis\".\"data_nascimento\" >= date '1900-01-01'"
+        },
+        "perfis_sexo_check": {
+          "name": "perfis_sexo_check",
+          "value": "\"perfis\".\"sexo\" in ('masculino', 'feminino')"
+        },
+        "perfis_altura_cm_check": {
+          "name": "perfis_altura_cm_check",
+          "value": "\"perfis\".\"altura_cm\" between 100 and 250"
+        },
+        "perfis_nivel_atividade_check": {
+          "name": "perfis_nivel_atividade_check",
+          "value": "\"perfis\".\"nivel_atividade\" in ('sedentario', 'leve', 'moderado', 'alto', 'muito_alto')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.refeicoes_salvas": {
+      "name": "refeicoes_salvas",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "refeicoes_salvas_user": {
+          "name": "refeicoes_salvas_user",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "refeicoes_salvas_user_id_perfis_user_id_fk": {
+          "name": "refeicoes_salvas_user_id_perfis_user_id_fk",
+          "tableFrom": "refeicoes_salvas",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "refeicoes_salvas_id_user_key": {
+          "name": "refeicoes_salvas_id_user_key",
+          "columns": [
+            "id",
+            "user_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "refeicoes_salvas_nome_check": {
+          "name": "refeicoes_salvas_nome_check",
+          "value": "char_length(\"refeicoes_salvas\".\"nome\") between 1 and 80"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.refeicoes_salvas_itens": {
+      "name": "refeicoes_salvas_itens",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "refeicao_salva_id": {
+          "name": "refeicao_salva_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alimento_base_id": {
+          "name": "alimento_base_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alimento_usuario_id": {
+          "name": "alimento_usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gramas": {
+          "name": "gramas",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "medida_texto": {
+          "name": "medida_texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        }
+      },
+      "indexes": {
+        "refeicoes_salvas_itens_refeicao": {
+          "name": "refeicoes_salvas_itens_refeicao",
+          "columns": [
+            {
+              "expression": "refeicao_salva_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "refeicoes_salvas_itens_alimento_base_id_alimentos_base_id_fk": {
+          "name": "refeicoes_salvas_itens_alimento_base_id_alimentos_base_id_fk",
+          "tableFrom": "refeicoes_salvas_itens",
+          "columnsFrom": [
+            "alimento_base_id"
+          ],
+          "tableTo": "alimentos_base",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "refeicoes_salvas_itens_refeicao_salva_id_user_id_refeicoes_salvas_id_user_id_fk": {
+          "name": "refeicoes_salvas_itens_refeicao_salva_id_user_id_refeicoes_salvas_id_user_id_fk",
+          "tableFrom": "refeicoes_salvas_itens",
+          "columnsFrom": [
+            "refeicao_salva_id",
+            "user_id"
+          ],
+          "tableTo": "refeicoes_salvas",
+          "columnsTo": [
+            "id",
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "refeicoes_salvas_itens_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk": {
+          "name": "refeicoes_salvas_itens_alimento_usuario_id_user_id_alimentos_usuario_id_user_id_fk",
+          "tableFrom": "refeicoes_salvas_itens",
+          "columnsFrom": [
+            "alimento_usuario_id",
+            "user_id"
+          ],
+          "tableTo": "alimentos_usuario",
+          "columnsTo": [
+            "id",
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "refeicoes_salvas_itens_gramas_check": {
+          "name": "refeicoes_salvas_itens_gramas_check",
+          "value": "\"refeicoes_salvas_itens\".\"gramas\" > 0 and \"refeicoes_salvas_itens\".\"gramas\" <= 5000"
+        },
+        "refeicoes_salvas_itens_medida_check": {
+          "name": "refeicoes_salvas_itens_medida_check",
+          "value": "char_length(\"refeicoes_salvas_itens\".\"medida_texto\") <= 60"
+        },
+        "refeicoes_salvas_itens_ordem_check": {
+          "name": "refeicoes_salvas_itens_ordem_check",
+          "value": "\"refeicoes_salvas_itens\".\"ordem\" between 0 and 100"
+        },
+        "refeicoes_salvas_itens_alimento_check": {
+          "name": "refeicoes_salvas_itens_alimento_check",
+          "value": "num_nonnulls(\"refeicoes_salvas_itens\".\"alimento_base_id\", \"refeicoes_salvas_itens\".\"alimento_usuario_id\") = 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.registros_alimentares": {
+      "name": "registros_alimentares",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "data": {
+          "name": "data",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "refeicao": {
+          "name": "refeicao",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "alimento_base_id": {
+          "name": "alimento_base_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "alimento_usuario_id": {
+          "name": "alimento_usuario_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "nome": {
+          "name": "nome",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "gramas": {
+          "name": "gramas",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "medida_texto": {
+          "name": "medida_texto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kcal": {
+          "name": "kcal",
+          "type": "numeric(8, 2)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proteina_g": {
+          "name": "proteina_g",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "carbo_g": {
+          "name": "carbo_g",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "gordura_g": {
+          "name": "gordura_g",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "fibra_g": {
+          "name": "fibra_g",
+          "type": "numeric(7, 2)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "origem": {
+          "name": "origem",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'manual'"
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "registros_user_data": {
+          "name": "registros_user_data",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "data",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "registros_user_criado": {
+          "name": "registros_user_criado",
+          "columns": [
+            {
+              "expression": "user_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": false,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "registros_alimentares_user_id_perfis_user_id_fk": {
+          "name": "registros_alimentares_user_id_perfis_user_id_fk",
+          "tableFrom": "registros_alimentares",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "tableTo": "perfis",
+          "columnsTo": [
+            "user_id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "registros_alimentares_alimento_base_id_alimentos_base_id_fk": {
+          "name": "registros_alimentares_alimento_base_id_alimentos_base_id_fk",
+          "tableFrom": "registros_alimentares",
+          "columnsFrom": [
+            "alimento_base_id"
+          ],
+          "tableTo": "alimentos_base",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "set null"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "registros_refeicao_check": {
+          "name": "registros_refeicao_check",
+          "value": "\"registros_alimentares\".\"refeicao\" in ('cafe', 'almoco', 'lanche', 'jantar', 'ceia')"
+        },
+        "registros_data_check": {
+          "name": "registros_data_check",
+          "value": "\"registros_alimentares\".\"data\" >= date '2000-01-01'"
+        },
+        "registros_nome_check": {
+          "name": "registros_nome_check",
+          "value": "char_length(\"registros_alimentares\".\"nome\") between 1 and 160"
+        },
+        "registros_gramas_check": {
+          "name": "registros_gramas_check",
+          "value": "\"registros_alimentares\".\"gramas\" > 0 and \"registros_alimentares\".\"gramas\" <= 5000"
+        },
+        "registros_medida_check": {
+          "name": "registros_medida_check",
+          "value": "char_length(\"registros_alimentares\".\"medida_texto\") <= 60"
+        },
+        "registros_kcal_check": {
+          "name": "registros_kcal_check",
+          "value": "\"registros_alimentares\".\"kcal\" between 0 and 10000"
+        },
+        "registros_proteina_check": {
+          "name": "registros_proteina_check",
+          "value": "\"registros_alimentares\".\"proteina_g\" between 0 and 5000"
+        },
+        "registros_carbo_check": {
+          "name": "registros_carbo_check",
+          "value": "\"registros_alimentares\".\"carbo_g\" between 0 and 5000"
+        },
+        "registros_gordura_check": {
+          "name": "registros_gordura_check",
+          "value": "\"registros_alimentares\".\"gordura_g\" between 0 and 5000"
+        },
+        "registros_fibra_check": {
+          "name": "registros_fibra_check",
+          "value": "\"registros_alimentares\".\"fibra_g\" between 0 and 5000"
+        },
+        "registros_alimento_check": {
+          "name": "registros_alimento_check",
+          "value": "num_nonnulls(\"registros_alimentares\".\"alimento_base_id\", \"registros_alimentares\".\"alimento_usuario_id\") <= 1"
+        },
+        "registros_origem_check": {
+          "name": "registros_origem_check",
+          "value": "\"registros_alimentares\".\"origem\" in ('manual', 'ia_texto', 'ia_foto', 'codigo_barras')"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "views": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
