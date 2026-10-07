@@ -58,7 +58,7 @@ Use duas janelas: uma normal e uma anônima.
 
 27. Saia. Em "Entrar", use o e-mail principal com senha errada **6 vezes**. **Esperado:** da 1ª à 5ª, "E-mail ou senha incorretos."; na 6ª, "Muitas tentativas. Espere alguns minutos e tente de novo."
 28. Logo em seguida, tente com a senha **certa**. **Esperado:** continua bloqueado (o bloqueio dura até 15 minutos).
-29. "Esqueci a senha" com o mesmo e-mail **4 vezes**. **Esperado:** na 4ª, "Muitas tentativas…".
+29. "Esqueci a senha" com o mesmo e-mail algumas vezes. **Esperado:** aparece "Muitas tentativas…" já na 2ª vez, porque o limite por rede (5 por hora) inclui os cadastros e pedidos de código dos passos anteriores. Isolado, o limite por e-mail é de 3 por hora.
 30. Depois de 15 minutos, entre com a senha certa. **Esperado:** entra.
 
 ## F. Ao terminar
