@@ -20,7 +20,7 @@ describe("HMAC da tabela limites", () => {
   });
 
   it("falha fechada sem chave ou com chave curta", () => {
-    // String vazia = variável ausente. (undefined usaria o valor padrão do .env.)
+    expect(() => chaveHmacLimites(undefined)).toThrow();
     expect(() => chaveHmacLimites("")).toThrow();
     expect(() => chaveHmacLimites("curta")).toThrow();
     expect(chaveHmacLimites(K1)).toBe(K1);

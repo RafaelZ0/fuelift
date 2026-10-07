@@ -26,7 +26,7 @@ export async function ipDaRequisicao(): Promise<string> {
 export async function dentroDoLimite(
   verificacoes: Array<{ tipo: keyof typeof LIMITES; valor: string }>,
 ): Promise<boolean> {
-  const chave = chaveHmacLimites();
+  const chave = chaveHmacLimites(process.env.LIMITES_HMAC_KEY);
   let permitido = true;
   for (const { tipo, valor } of verificacoes) {
     const { maximo, janela } = LIMITES[tipo];

@@ -2,8 +2,8 @@ import { createHmac } from "node:crypto";
 
 export const TAMANHO_MINIMO_CHAVE = 32;
 
-/** Lê a chave do HMAC. Falha fechada: sem chave válida, lança erro. */
-export function chaveHmacLimites(valor = process.env.LIMITES_HMAC_KEY): string {
+/** Valida a chave do HMAC. Falha fechada: sem chave válida, lança erro. */
+export function chaveHmacLimites(valor: string | undefined): string {
   if (!valor || valor.length < TAMANHO_MINIMO_CHAVE) {
     throw new Error("LIMITES_HMAC_KEY ausente ou com menos de 32 caracteres.");
   }
