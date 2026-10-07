@@ -34,8 +34,10 @@ Next.js (App Router) + React + TypeScript + Tailwind, Neon (Postgres) com Neon A
 
 ## Saúde
 
-- O app nunca define sozinho metas de calorias ou proteína nem sugere déficits agressivos. Essas metas são digitadas pelo usuário (combinadas com o nutricionista).
-- Gasto calórico e projeções são sempre apresentados como estimativas.
+- Metas de calorias, proteína, carboidrato e gordura: a IA pode **sugerir** valores com base em peso, altura, idade, sexo, nível de atividade, treino e meta de peso, mostrando o cálculo e deixando claro que é uma estimativa. A meta só passa a valer depois que o usuário confirma (e pode ajustá-la com o nutricionista). O app nunca grava uma meta sozinho.
+- Nunca sugerir déficits agressivos: ritmo de perda acima de ~1% do peso por semana (configurável) ou consumo abaixo do gasto em repouso estimado não é sugerido e gera aviso para conversar com o nutricionista.
+- Alimentos fora do banco: a IA pode estimar os nutrientes, sempre marcados como "estimativa da IA". O usuário confere, ajusta e confirma; o item vira um alimento do usuário, editável.
+- Gasto calórico, projeções e estimativas da IA são sempre apresentados como estimativas.
 - Nada é salvo a partir da IA sem confirmação do usuário.
 
 @AGENTS.md

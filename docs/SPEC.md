@@ -35,7 +35,7 @@ Segurança: regras obrigatórias em `docs/SEGURANCA.md`.
 ### 3.1 Perfil e metas
 
 - Dados: altura, data de nascimento, sexo, nível de atividade, peso atual, massa magra (opcional, da avaliação corporal).
-- Metas: calorias, proteína, carboidrato, gordura, água. **As metas de calorias e proteína são definidas manualmente** (combinadas com o nutricionista). O app mostra o gasto estimado como referência, mas nunca define a meta sozinho nem sugere déficits agressivos.
+- Metas: calorias, proteína, carboidrato, gordura, água. O usuário digita as metas (combinadas com o nutricionista) **ou** aceita uma sugestão da IA (seção 3.12), que mostra o cálculo como estimativa e só vale depois de confirmada. O app nunca grava uma meta sozinho nem sugere déficits agressivos.
 - Histórico das metas (a meta de um dia passado não muda quando a meta atual muda).
 
 ### 3.2 Gasto calórico diário
@@ -56,11 +56,13 @@ Duas camadas, ambas exibidas como **estimativas**:
 
 ### 3.3 Diário alimentar
 
-- Refeições do dia: café da manhã, almoço, lanche, jantar, ceia (lista editável).
-- Busca de alimentos em português, tolerante a acentos e erros de digitação. Fontes: TACO, produtos de código de barras em cache e alimentos criados pelo usuário.
-- Porções em gramas e em medidas caseiras (colher de sopa, concha, unidade, fatia, xícara...), com tabela de conversão por alimento.
-- Favoritos, refeições salvas, receitas (soma dos ingredientes com rendimento em porções) e copiar refeição/dia anterior.
-- Totais do dia: calorias, proteína, carboidrato, gordura e fibra versus metas.
+- Refeições do dia: café da manhã, almoço, lanche, jantar, ceia (fixas na Fase 2).
+- Dá para registrar no dia de hoje e em dias passados; dias futuros ficam bloqueados.
+- Busca de alimentos em português, tolerante a acentos e erros de digitação. Fontes: TACO, produtos de código de barras em cache e alimentos criados pelo usuário. Os usados recentemente aparecem primeiro.
+- Porções em gramas e em medidas caseiras definidas pelo usuário por alimento (ex.: "minha concha = 140 g").
+- Alimentos criados pelo usuário a partir do rótulo: o usuário digita os valores da porção do rótulo (qualquer quantidade de gramas) e o app converte para 100 g.
+- Favoritos, refeições salvas, receitas (soma dos ingredientes com rendimento em porções) e copiar refeição de outro dia. Copiar **recalcula** os nutrientes na hora, como um registro novo daquele dia (cada dia é independente).
+- Totais do dia: calorias, proteína, carboidrato, gordura e fibra versus a meta vigente naquele dia. Nutriente desconhecido não vira zero: o total avisa que está parcial.
 - Cada entrada guarda os nutrientes **calculados no momento do registro** (snapshot), para que correções futuras no banco não alterem o histórico.
 
 ### 3.4 Registro por IA (texto e foto)
@@ -69,9 +71,9 @@ Princípio central: **a IA interpreta, o banco de dados calcula.**
 
 1. O usuário escreve ("almocei 2 conchas de feijão, arroz e um filé de frango grelhado") ou envia uma foto.
 2. O servidor pede ao Gemini uma saída em JSON estruturado: lista de itens com nome, quantidade, unidade, gramas estimadas e nível de confiança.
-3. Cada item é casado com o banco de alimentos (busca textual). As calorias vêm do banco, não da IA.
+3. Cada item é casado com o banco de alimentos (busca textual). Quando há correspondência, as calorias vêm do banco, não da IA.
 4. A tela mostra os itens com alimento casado, porção e confiança. O usuário confirma, ajusta ou troca **antes de salvar**. Nada é salvo sem confirmação.
-5. Itens sem correspondência no banco: o usuário escolhe outro alimento ou cria um novo.
+5. Itens sem correspondência no banco: o usuário escolhe outro alimento, cria um novo ou pede uma **estimativa da IA** (nutrientes por 100 g, validados por faixa). A estimativa aparece marcada como "estimativa da IA", o usuário confere e confirma, e ela vira um alimento do usuário, editável (origem registrada).
 
 Detalhes:
 
@@ -135,7 +137,9 @@ Primeira tela do app: calorias consumidas × meta, proteína, água, treino do d
 
 ### 3.12 Meta de perda de peso e plano personalizado
 
-- O usuário define: peso-meta, data desejada (opcional) e a meta diária de calorias combinada com o nutricionista.
+- O usuário define: peso-meta e data desejada (opcional).
+- **Sugestão de metas pela IA:** com peso, altura, idade, sexo, nível de atividade, treino e meta de peso, a IA sugere calorias diárias e a divisão de proteína, carboidrato e gordura. A tela mostra o cálculo (gasto estimado, déficit, ritmo semanal previsto) como estimativa. A meta só vale depois que o usuário confirma, e ele pode ajustá-la (ou digitar a combinada com o nutricionista). Os cálculos numéricos vêm das funções puras do app (fórmulas da seção 3.2); a IA explica e ajuda a escolher, mas os números validados são os do app.
+- **Limites de segurança da sugestão:** ritmo acima de ~1% do peso por semana (configurável) ou calorias abaixo do gasto em repouso estimado nunca são sugeridos; se o usuário digitar algo assim, aparece um aviso para conversar com o nutricionista.
 - **Projeção:** simulação semana a semana. Perda semanal ≈ (gasto estimado − consumo médio) × 7 ÷ 7.700. A cada semana simulada, o gasto estimado é recalculado para o peso projetado, porque o gasto cai conforme o peso cai. Uma projeção linear seria otimista demais.
 - Resultado: data estimada para atingir a meta, marcos intermediários (a cada 5 kg, editável) e ritmo semanal previsto.
 - **Com data desejada:** calcular o déficit diário necessário. Se o ritmo exigido passar de cerca de 1% do peso corporal por semana (referência geral comum, configurável), mostrar um aviso para conversar com o nutricionista. O app não muda a meta sozinho.
@@ -167,14 +171,17 @@ Criar uma tela de importação que leia esse arquivo e converta para as tabelas 
 
 ## 4. Banco de dados (proposta inicial)
 
-Toda tabela de dados pessoais tem `user_id` (o id do usuário no Neon Auth, tipo texto). O acesso aos dados passa sempre por uma camada de dados no servidor que recebe o `user_id` da sessão e filtra todas as consultas por ele (detalhes em `docs/SEGURANCA.md`). Isso prepara o app para outros usuários.
+Toda tabela de dados pessoais tem `user_id` (o id do usuário no Neon Auth, tipo uuid). O acesso aos dados passa sempre por uma camada de dados no servidor que recebe o `user_id` da sessão e filtra todas as consultas por ele (detalhes em `docs/SEGURANCA.md`). Isso prepara o app para outros usuários.
 
 - `perfis` – dados do usuário e preferências.
 - `metas` – metas com data de início de vigência.
-- `alimentos` – fonte (`taco` | `off` | `usuario`), nome, marca, código de barras, nutrientes por 100 g (kcal, proteína, carboidrato, gordura, fibra, sódio), `user_id` nulo para alimentos públicos.
-- `medidas_caseiras` – alimento, nome da medida, gramas.
+- `fontes_alimentos` – fonte, edição, citação, termos e integridade do arquivo importado.
+- `alimentos_base` – alimentos públicos (TACO; depois Open Food Facts), nutrientes por 100 g, só leitura para o app.
+- `alimentos_usuario` – alimentos criados pelo usuário (rótulo ou estimativa da IA confirmada), nutrientes por 100 g.
+- `medidas` – medidas caseiras do usuário por alimento (nome, gramas).
+- `favoritos`.
 - `registros_alimentares` – data, refeição, alimento, gramas, nutrientes em snapshot, origem (`manual` | `ia_texto` | `ia_foto` | `codigo_barras`).
-- `refeicoes_salvas`, `receitas`, `receita_itens`.
+- `refeicoes_salvas`, `refeicoes_salvas_itens`, `receitas`, `receita_itens`.
 - `agua` – data, ml, horário.
 - `pesagens` – data, peso, massa magra, cintura.
 - `planos_treino`, `treinos` (Dia 1 a 5), `exercicios`, `treino_exercicios` (ordem, séries, faixa, substitutos).
@@ -186,13 +193,17 @@ Toda tabela de dados pessoais tem `user_id` (o id do usuário no Neon Auth, tipo
 - `uso_ia` – data, tipo, quantidade de chamadas.
 - `tokens_api` – token pessoal (guardar só o hash) para o endpoint de passos.
 
-Busca de alimentos em português: **verificar** as extensões de Postgres disponíveis no Neon (por exemplo, para ignorar acentos e buscar por similaridade) antes de definir os índices.
+Busca de alimentos em português: extensão `pg_trgm` (disponível no Neon) com índice de trigramas sobre o nome normalizado (sem acento, minúsculas) gerado pelo app.
 
 ## 5. Dados de alimentos
 
-- **TACO (NEPA/UNICAMP):** obter o arquivo oficial no site do NEPA/UNICAMP (**verificar** formato e edição mais recente). Escrever um script de importação (seed) com validação dos valores. Não usar cópias de sites de terceiros sem checar origem e licença.
+- **TACO (NEPA/UNICAMP):** 4ª edição revisada e ampliada (2011), 597 alimentos, planilha oficial do site do NEPA guardada em `dados/taco/` com verificação de integridade (SHA-256). Termos: "É permitida a reprodução parcial ou total desta obra, desde que citada a fonte." Citar a fonte na interface. Importação por script idempotente com validação.
+  - Marcações (padrão FAO/INFOODS): `Tr` (traço) = 0; `NA` (não aplicável) = 0; `*` (em reavaliação) e em branco (não analisado) = valor desconhecido (nunca vira zero); carboidrato negativo (artefato do cálculo por diferença) = 0. A marcação original fica guardada.
+  - O carboidrato da TACO é calculado por diferença e inclui a fibra.
+  - Valores desconhecidos de energia e macronutrientes são preenchidos com uma fonte oficial complementar (USDA FoodData Central, domínio público), com a fonte registrada por valor e aprovação do usuário. Sem equivalente confiável, o alimento fica visível mas não pode ser adicionado.
 - **Open Food Facts:** consulta sob demanda por código de barras, com cache. Enviar um User-Agent identificando o app, como o projeto pede.
-- **Alimentos do usuário:** cadastro manual a partir de rótulos.
+- **Alimentos do usuário:** cadastro manual a partir de rótulos (valores da porção do rótulo, convertidos para 100 g) ou estimativa da IA confirmada pelo usuário (seção 3.4).
+- **Medidas caseiras oficiais (IBGE, POF 2008-2009, "Tabela de Medidas Referidas"):** existem dois arquivos ZIP no FTP do IBGE; formato interno e licença ainda não verificados. Não importar sem aprovação.
 
 ## 6. Ordem de construção (fases)
 
@@ -210,6 +221,6 @@ Cada fase termina com o app funcionando, publicado no Vercel e testado no iPhone
 
 - **Gemini:** **verificar** se o plano gratuito permite uso comercial (há fontes dizendo que não) e a questão de privacidade. Com outros usuários, migrar para um plano pago ou outro provedor. A abstração da seção 3.4 existe para isso.
 - **Open Food Facts:** licença ODbL, com atribuição e possível obrigação de compartilhar bases derivadas. **Verificar** as regras para uso comercial.
-- **TACO:** **verificar** os termos de uso para fins comerciais.
+- **TACO:** os termos permitem reprodução total ou parcial citando a fonte e não mencionam uso comercial. **Verificar** com o NEPA antes de vender.
 - **LGPD:** dados de saúde são dados pessoais sensíveis. Será preciso política de privacidade, consentimento, exclusão de conta e exportação de dados.
 - Aviso permanente de que o app não substitui nutricionista, médico ou educador físico.
