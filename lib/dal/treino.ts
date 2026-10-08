@@ -97,6 +97,7 @@ export async function criarPlano(userId: string, dados: DadosPlano): Promise<str
   const id = crypto.randomUUID();
   await db.batch([
     db.update(planosTreino).set({ ativo: false }).where(and(eq(planosTreino.userId, userId), eq(planosTreino.ativo, true))),
+    db.delete(agendaTreino).where(eq(agendaTreino.userId, userId)),
     db.insert(planosTreino).values({ id, userId, ...dados, ativo: true }),
   ]);
   return id;

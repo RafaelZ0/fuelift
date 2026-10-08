@@ -184,6 +184,7 @@ export const rascunhoSchema = z.object({
 
 // ─── Esquema JSON enviado ao Gemini (subconjunto simples de JSON Schema) ───
 
+// Sem maxItems: o Gemini recusa a palavra (400); os limites são aplicados em sanitizarRespostaDaIa.
 export const ESQUEMA_RESPOSTA_IA = {
   type: "object",
   properties: {
@@ -194,7 +195,6 @@ export const ESQUEMA_RESPOSTA_IA = {
     },
     treinos: {
       type: "array",
-      maxItems: LIMITES.treinos,
       items: {
         type: "object",
         properties: {
@@ -203,7 +203,6 @@ export const ESQUEMA_RESPOSTA_IA = {
           dia_sugerido: { type: "integer", minimum: 0, maximum: 6, description: "0 = domingo ... 6 = sábado" },
           exercicios: {
             type: "array",
-            maxItems: LIMITES.exerciciosPorTreino,
             items: {
               type: "object",
               properties: {
@@ -226,7 +225,6 @@ export const ESQUEMA_RESPOSTA_IA = {
         required: ["nome", "exercicios"],
       },
     },
-    alertas: { type: "array", maxItems: LIMITES.alertas, items: { type: "string" } },
   },
   required: ["plano", "treinos"],
 } as const;
