@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   date,
   foreignKey,
@@ -29,10 +30,13 @@ export const perfis = pgTable(
     alturaCm: numeric("altura_cm", { precision: 4, scale: 1, mode: "number" }),
     nivelAtividade: text("nivel_atividade"),
     inicioPlano: date("inicio_plano"),
+    // Dia da semana (0 = domingo ... 6 = sábado) do lembrete da aplicação semanal.
+    diaAplicacao: integer("dia_aplicacao"),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
     atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    check("perfis_dia_aplicacao_check", sql`${t.diaAplicacao} between 0 and 6`),
     check("perfis_nome_check", sql`char_length(${t.nome}) <= 80`),
     check("perfis_data_nascimento_check", sql`${t.dataNascimento} >= date '1900-01-01'`),
     check("perfis_sexo_check", sql`${t.sexo} in ('masculino', 'feminino')`),
@@ -403,3 +407,266 @@ export type Medida = typeof medidas.$inferSelect;
 export type RegistroAlimentar = typeof registrosAlimentares.$inferSelect;
 export type RefeicaoSalva = typeof refeicoesSalvas.$inferSelect;
 export type MedidaIbge = typeof medidasIbge.$inferSelect;
+
+// ───────────────────────── Fase 3A: treino, água, corpo ─────────────────────────
+
+const dono = () =>
+  uuid("user_id")
+    .notNull()
+    .references(() => perfis.userId, { onDelete: "cascade" });
+
+export const MOTIVOS_FALTA = ["trabalho", "cansaco", "dor_lesao", "doente", "imprevisto", "outro"] as const;
+
+// Exercícios do usuário. foto_id = id no Free Exercise DB (domínio público), opcional.
+export const exercicios = pgTable(
+  "exercicios",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    nome: text("nome").notNull(),
+    grupo: text("grupo"),
+    unilateral: boolean("unilateral").notNull().default(false),
+    cargaPorHalter: boolean("carga_por_halter").notNull().default(false),
+    medida: text("medida").notNull().default("repeticoes"),
+    fotoId: text("foto_id"),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("exercicios_id_user_key").on(t.id, t.userId),
+    index("exercicios_user").on(t.userId),
+    check("exercicios_nome_check", sql`char_length(${t.nome}) between 1 and 80`),
+    check("exercicios_grupo_check", sql`char_length(${t.grupo}) <= 40`),
+    check("exercicios_medida_check", sql`${t.medida} in ('repeticoes', 'segundos')`),
+    check("exercicios_foto_check", sql`${t.fotoId} ~ '^[A-Za-z0-9_-]{1,120}$'`),
+  ],
+);
+
+export const planosTreino = pgTable(
+  "planos_treino",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    nome: text("nome").notNull(),
+    inicio: date("inicio").notNull(),
+    // Fase de readaptação: menos séries nas primeiras semanas.
+    seriesInicio: integer("series_inicio").notNull().default(2),
+    seriesDepois: integer("series_depois").notNull().default(3),
+    semanasInicio: integer("semanas_inicio").notNull().default(3),
+    ativo: boolean("ativo").notNull().default(true),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("planos_treino_id_user_key").on(t.id, t.userId),
+    uniqueIndex("planos_treino_ativo_key").on(t.userId).where(sql`${t.ativo}`),
+    check("planos_treino_nome_check", sql`char_length(${t.nome}) between 1 and 80`),
+    check("planos_treino_series_check", sql`${t.seriesInicio} between 1 and 20 and ${t.seriesDepois} between 1 and 20`),
+    check("planos_treino_semanas_check", sql`${t.semanasInicio} between 0 and 52`),
+  ],
+);
+
+export const treinos = pgTable(
+  "treinos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    planoId: uuid("plano_id").notNull(),
+    ordem: integer("ordem").notNull(),
+    nome: text("nome").notNull(),
+    foco: text("foco"),
+  },
+  (t) => [
+    unique("treinos_id_user_key").on(t.id, t.userId),
+    foreignKey({ columns: [t.planoId, t.userId], foreignColumns: [planosTreino.id, planosTreino.userId] }).onDelete("cascade"),
+    index("treinos_plano").on(t.planoId),
+    check("treinos_nome_check", sql`char_length(${t.nome}) between 1 and 60`),
+    check("treinos_foco_check", sql`char_length(${t.foco}) <= 120`),
+    check("treinos_ordem_check", sql`${t.ordem} between 0 and 30`),
+  ],
+);
+
+export const treinoExercicios = pgTable(
+  "treino_exercicios",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    treinoId: uuid("treino_id").notNull(),
+    exercicioId: uuid("exercicio_id").notNull(),
+    ordem: integer("ordem").notNull(),
+    // null = usa as séries da fase de readaptação do plano.
+    series: integer("series"),
+    repsMin: integer("reps_min").notNull(),
+    repsMax: integer("reps_max").notNull(),
+    descansoS: integer("descanso_s").notNull().default(90),
+    observacao: text("observacao"),
+  },
+  (t) => [
+    unique("treino_exercicios_id_user_key").on(t.id, t.userId),
+    foreignKey({ columns: [t.treinoId, t.userId], foreignColumns: [treinos.id, treinos.userId] }).onDelete("cascade"),
+    foreignKey({ columns: [t.exercicioId, t.userId], foreignColumns: [exercicios.id, exercicios.userId] }).onDelete("cascade"),
+    index("treino_exercicios_treino").on(t.treinoId),
+    check("treino_exercicios_series_check", sql`${t.series} between 1 and 20`),
+    check("treino_exercicios_reps_check", sql`${t.repsMin} between 1 and 1000 and ${t.repsMax} between ${t.repsMin} and 1000`),
+    check("treino_exercicios_descanso_check", sql`${t.descansoS} between 0 and 600`),
+    check("treino_exercicios_ordem_check", sql`${t.ordem} between 0 and 60`),
+    check("treino_exercicios_obs_check", sql`char_length(${t.observacao}) <= 300`),
+  ],
+);
+
+export const treinoSubstitutos = pgTable(
+  "treino_substitutos",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    treinoExercicioId: uuid("treino_exercicio_id").notNull(),
+    exercicioId: uuid("exercicio_id").notNull(),
+  },
+  (t) => [
+    foreignKey({ columns: [t.treinoExercicioId, t.userId], foreignColumns: [treinoExercicios.id, treinoExercicios.userId] }).onDelete("cascade"),
+    foreignKey({ columns: [t.exercicioId, t.userId], foreignColumns: [exercicios.id, exercicios.userId] }).onDelete("cascade"),
+    unique("treino_substitutos_key").on(t.treinoExercicioId, t.exercicioId),
+  ],
+);
+
+// Dia da semana (0 = domingo ... 6 = sábado) → treino.
+export const agendaTreino = pgTable(
+  "agenda_treino",
+  {
+    userId: dono(),
+    diaSemana: integer("dia_semana").notNull(),
+    treinoId: uuid("treino_id").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.diaSemana] }),
+    foreignKey({ columns: [t.treinoId, t.userId], foreignColumns: [treinos.id, treinos.userId] }).onDelete("cascade"),
+    check("agenda_treino_dia_check", sql`${t.diaSemana} between 0 and 6`),
+  ],
+);
+
+// Troca do treino de um dia específico (treino_id nulo = dia de descanso).
+export const trocasTreino = pgTable(
+  "trocas_treino",
+  {
+    userId: dono(),
+    data: date("data").notNull(),
+    treinoId: uuid("treino_id"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.data] }),
+    foreignKey({ columns: [t.treinoId, t.userId], foreignColumns: [treinos.id, treinos.userId] }).onDelete("cascade"),
+    check("trocas_treino_data_check", sql`${t.data} >= date '2000-01-01'`),
+  ],
+);
+
+export const sessoesTreino = pgTable(
+  "sessoes_treino",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    data: date("data").notNull(),
+    treinoId: uuid("treino_id"),
+    status: text("status").notNull(),
+    motivo: text("motivo"),
+    observacao: text("observacao"),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("sessoes_treino_id_user_key").on(t.id, t.userId),
+    unique("sessoes_treino_dia_key").on(t.userId, t.data),
+    // Se o treino for apagado, a sessão fica (histórico), sem o vínculo.
+    foreignKey({ columns: [t.treinoId, t.userId], foreignColumns: [treinos.id, treinos.userId] }),
+    index("sessoes_treino_user_data").on(t.userId, t.data),
+    check("sessoes_treino_data_check", sql`${t.data} >= date '2000-01-01'`),
+    check("sessoes_treino_status_check", sql`${t.status} in ('feito', 'faltou')`),
+    check(
+      "sessoes_treino_motivo_check",
+      sql`${t.motivo} is null or ${t.motivo} in ('trabalho', 'cansaco', 'dor_lesao', 'doente', 'imprevisto', 'outro')`,
+    ),
+    check("sessoes_treino_motivo_status_check", sql`${t.status} = 'faltou' or ${t.motivo} is null`),
+    check("sessoes_treino_obs_check", sql`char_length(${t.observacao}) <= 500`),
+  ],
+);
+
+export const seriesTreino = pgTable(
+  "series",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    sessaoId: uuid("sessao_id").notNull(),
+    exercicioId: uuid("exercicio_id").notNull(),
+    numero: integer("numero").notNull(),
+    cargaKg: numeric("carga_kg", { precision: 6, scale: 2, mode: "number" }).notNull().default(0),
+    repeticoes: integer("repeticoes"),
+    segundos: integer("segundos"),
+    feito: boolean("feito").notNull().default(true),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    foreignKey({ columns: [t.sessaoId, t.userId], foreignColumns: [sessoesTreino.id, sessoesTreino.userId] }).onDelete("cascade"),
+    foreignKey({ columns: [t.exercicioId, t.userId], foreignColumns: [exercicios.id, exercicios.userId] }).onDelete("cascade"),
+    unique("series_chave").on(t.sessaoId, t.exercicioId, t.numero),
+    index("series_user_exercicio").on(t.userId, t.exercicioId),
+    check("series_numero_check", sql`${t.numero} between 1 and 30`),
+    check("series_carga_check", sql`${t.cargaKg} between 0 and 1000`),
+    check("series_reps_check", sql`${t.repeticoes} between 0 and 1000`),
+    check("series_segundos_check", sql`${t.segundos} between 0 and 7200`),
+  ],
+);
+
+export const agua = pgTable(
+  "agua",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    data: date("data").notNull(),
+    ml: integer("ml").notNull(),
+    horario: timestamp("horario", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("agua_user_data").on(t.userId, t.data),
+    check("agua_ml_check", sql`${t.ml} between 1 and 5000`),
+    check("agua_data_check", sql`${t.data} >= date '2000-01-01'`),
+  ],
+);
+
+export const pesagens = pgTable(
+  "pesagens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    data: date("data").notNull(),
+    pesoKg: numeric("peso_kg", { precision: 5, scale: 1, mode: "number" }).notNull(),
+    massaMagraKg: numeric("massa_magra_kg", { precision: 5, scale: 1, mode: "number" }),
+    cinturaCm: numeric("cintura_cm", { precision: 5, scale: 1, mode: "number" }),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("pesagens_dia_key").on(t.userId, t.data),
+    check("pesagens_data_check", sql`${t.data} >= date '2000-01-01'`),
+    check("pesagens_peso_check", sql`${t.pesoKg} between 20 and 400`),
+    check("pesagens_massa_magra_check", sql`${t.massaMagraKg} between 5 and 300 and ${t.massaMagraKg} <= ${t.pesoKg}`),
+    check("pesagens_cintura_check", sql`${t.cinturaCm} between 30 and 300`),
+  ],
+);
+
+// Registro de "feito" da aplicação semanal (só um registro; o app não dá orientação sobre a medicação).
+export const aplicacoes = pgTable(
+  "aplicacoes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    data: date("data").notNull(),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("aplicacoes_dia_key").on(t.userId, t.data),
+    check("aplicacoes_data_check", sql`${t.data} >= date '2000-01-01'`),
+  ],
+);
+
+export type Exercicio = typeof exercicios.$inferSelect;
+export type PlanoTreino = typeof planosTreino.$inferSelect;
+export type Treino = typeof treinos.$inferSelect;
+export type TreinoExercicio = typeof treinoExercicios.$inferSelect;
+export type SessaoTreino = typeof sessoesTreino.$inferSelect;
+export type SerieTreino = typeof seriesTreino.$inferSelect;
+export type Pesagem = typeof pesagens.$inferSelect;

@@ -43,6 +43,13 @@
       "when": 1791459704294,
       "tag": "0005_medidas_ibge_permissoes",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791461544289,
+      "tag": "0006_fase3a_treino_agua_corpo",
+      "breakpoints": true
     }
   ]
 }
