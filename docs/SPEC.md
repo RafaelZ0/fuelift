@@ -98,15 +98,17 @@ Detalhes:
 
 ### 3.7 Treino
 
-Migrar o plano atual (detalhes completos no backup do app atual e no documento "Plano de Treino – 5 dias"):
+O plano de treino é do usuário. Há três caminhos para criá-lo: **à mão**, **com ajuda da IA** (a partir de meta, tamanho, objetivos, nível, dias disponíveis e limitações) e **importando** um treino existente por arquivo ou print (a IA lê e monta o plano). Em todos os casos o resultado é um **rascunho** que o usuário revisa, ajusta e confirma antes de salvar; os exercícios gerados são ligados às fotos do Free Exercise DB por busca no banco (não pela IA), e o usuário confirma a foto. A criação com IA e a importação por arquivo/print entram na etapa 3B (depois do motor de treino, etapa 3A). O plano atual do usuário (documento "Plano de Treino – 5 dias") e o backup do app "Meu Treino" podem ser importados como exemplo quando estiverem disponíveis.
+
+O plano tem:
 
 - 5 treinos (Dia 1 superiores/empurrar, Dia 2 inferiores/quadríceps, Dia 3 superiores/puxar, Dia 4 inferiores/posterior e glúteo, Dia 5 corpo inteiro + core), cada exercício com séries, faixa de repetições, observações, substitutos e foto.
-- Fotos: Free Exercise DB (github.com/yuhonas/free-exercise-db), publicado como domínio público. Guardar a referência da fonte.
+- Fotos: Free Exercise DB (github.com/yuhonas/free-exercise-db), publicado como domínio público (The Unlicense), exibidas por link direto do repositório (2 imagens por exercício; nomes e instruções só em inglês). Guardar a referência da fonte.
 - Agenda semanal configurável (dia da semana → treino) e troca do treino em um dia específico.
 - Fase de readaptação: 2 séries nas semanas 1 a 3, 3 séries a partir da semana 4 (contadas a partir da data de início, configurável).
 - Registro por série: carga, repetições (ou segundos), feito. Exercícios unilaterais e "carga por halter" sinalizados.
 - Escolha do exercício feito (principal ou substituto), registrada na sessão.
-- Cronômetro de descanso ao marcar uma série (tempo configurável, +15 s, pular, aviso sonoro).
+- Cronômetro de descanso ao marcar uma série (tempo configurável, +15 s, pular, aviso sonoro). No iPhone: som só depois de um toque na tela (bipe gerado no código); vibração não é suportada; manter a tela acesa só no iOS 18.4+; o cronômetro guarda a hora exata do fim (não conta segundo a segundo) e o aviso com a tela apagada exigiria notificação push (fora do escopo por ora).
 - Dica de progressão: mostrar o que foi feito na última sessão do exercício. Se todas as séries chegaram ao topo da faixa, sugerir subir a carga.
 - Treino feito, falta com motivo (trabalho, cansaço, dor ou lesão, doente, imprevisto, outro) e observação.
 - Calendário mensal: feito, faltou, planejado, sem registro. Estatísticas: treinos no mês, faltas, sequência atual, motivos mais comuns.
