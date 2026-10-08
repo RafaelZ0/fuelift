@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { exigirUsuario } from "@/lib/auth/sessao";
+import { totalAguaDoDia } from "@/lib/dal/agua";
 import { metaVigente } from "@/lib/dal/metas";
 import { listarDia } from "@/lib/dal/registros";
 import { hojeSaoPaulo, rotuloDia, somarDias } from "@/lib/datas";
 import { compararComMeta, formatarGramas, formatarKcal, somarDia, type CampoTotal } from "@/lib/nutricao";
 import { dataDiario, REFEICOES, ROTULOS_REFEICAO } from "@/lib/validacao/comida";
 import { MenuRefeicao } from "./menu-refeicao";
+import { PainelAgua } from "./painel-agua";
 
 export const metadata = { title: "Comida · FuelLift" };
 
@@ -24,7 +26,7 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
   const r = dataDiario.safeParse(typeof pedido === "string" ? pedido : hoje);
   const data = r.success ? r.data : hoje;
 
-  const [registros, meta] = await Promise.all([listarDia(userId, data), metaVigente(userId, data)]);
+  const [registros, meta, aguaMl] = await Promise.all([listarDia(userId, data), metaVigente(userId, data), totalAguaDoDia(userId, data)]);
   const totais = somarDia(registros);
 
   return (
@@ -93,6 +95,8 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
           </p>
         ) : null}
       </section>
+
+      <PainelAgua data={data} totalMl={aguaMl} metaMl={meta?.aguaMl ?? null} editavel />
 
       {REFEICOES.map((ref) => {
         const itens = registros.filter((x) => x.refeicao === ref);

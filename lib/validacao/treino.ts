@@ -20,7 +20,8 @@ export const id = z.uuid({ error: "Identificador inválido." });
 
 /** Número com vírgula ou ponto, até `casas` decimais, dentro de [min, max]. */
 export function numero(min: number, max: number, rotulo: string, casas = 2) {
-  const re = new RegExp(`^\\d{1,6}([.,]\\d{1,${casas}})?$`);
+  // Sem casas decimais, só dígitos (a parte decimal não existe).
+  const re = casas === 0 ? /^\d{1,6}$/ : new RegExp(`^\\d{1,6}([.,]\\d{1,${casas}})?$`);
   return z
     .string()
     .trim()

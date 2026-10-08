@@ -6,7 +6,7 @@ import { somarDias } from "./datas";
 
 const MS_DIA = 86_400_000;
 
-function diasEntre(deIso: string, ateIso: string): number {
+export function diasEntre(deIso: string, ateIso: string): number {
   const [a1, m1, d1] = deIso.split("-").map(Number);
   const [a2, m2, d2] = ateIso.split("-").map(Number);
   return Math.round((Date.UTC(a2, m2 - 1, d2) - Date.UTC(a1, m1 - 1, d1)) / MS_DIA);

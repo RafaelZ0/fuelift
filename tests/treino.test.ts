@@ -183,3 +183,16 @@ describe("cronômetro de descanso", () => {
     expect(formatarTempo(-3)).toBe("0:00");
   });
 });
+
+describe("fotos dos exercícios", () => {
+  it("monta a URL só para ids válidos", async () => {
+    const { urlFoto, fotoIdValido } = await import("@/lib/fotos");
+    expect(urlFoto("Barbell_Squat", 0)).toBe("https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises/Barbell_Squat/0.jpg");
+    expect(urlFoto("Barbell_Bench_Press_-_Medium_Grip", 1)).toContain("/Barbell_Bench_Press_-_Medium_Grip/1.jpg");
+    expect(urlFoto("../etc/passwd")).toBeNull();
+    expect(urlFoto("a/b")).toBeNull();
+    expect(urlFoto("https://evil.com/x")).toBeNull();
+    expect(urlFoto(null)).toBeNull();
+    expect(fotoIdValido("x".repeat(121))).toBe(false);
+  });
+});

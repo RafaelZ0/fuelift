@@ -13,7 +13,8 @@ function montarCsp(nonce: string): string {
     "default-src 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${dev ? " 'unsafe-eval'" : ""}`,
     `style-src 'self' 'nonce-${nonce}'`,
-    "img-src 'self' blob: data:",
+    // Fotos dos exercícios: só o repositório público do Free Exercise DB (raw.githubusercontent.com).
+    "img-src 'self' blob: data: https://raw.githubusercontent.com",
     "font-src 'self'",
     "connect-src 'self'",
     "object-src 'none'",
