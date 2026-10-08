@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+import { BuscaFoto } from "@/components/busca-foto";
 import { Aviso, BotaoEnviar, Campo, Opcoes } from "@/components/ui";
 import { salvarExercicio, type EstadoTreino } from "../actions";
 
@@ -18,6 +19,7 @@ function Caixa({ nome, rotulo, marcada }: { nome: string; rotulo: string; marcad
 export function FormExercicio({ valores }: { valores?: ValoresExercicio }) {
   const [estado, acao] = useActionState<EstadoTreino, FormData>(salvarExercicio, {});
   const e = estado.erros ?? {};
+  const [foto, setFoto] = useState<{ id: string | null; nome: string | null }>({ id: valores?.fotoId || null, nome: valores?.fotoId ? valores.fotoId.replace(/_/g, " ") : null });
   return (
     <form action={acao} className="space-y-8" noValidate>
       {valores ? <input type="hidden" name="exercicioId" value={valores.id} /> : null}
@@ -34,14 +36,9 @@ export function FormExercicio({ valores }: { valores?: ValoresExercicio }) {
         <Caixa nome="unilateral" rotulo="Unilateral (um lado por vez)" marcada={valores?.unilateral} />
         <Caixa nome="cargaPorHalter" rotulo="Carga por halter (cada halter)" marcada={valores?.cargaPorHalter} />
       </div>
-      <Campo
-        nome="fotoId"
-        rotulo="Foto: id do Free Exercise DB (opcional)"
-        maxLength={120}
-        valor={valores?.fotoId}
-        erro={e.fotoId}
-        dica="Ex.: Barbell_Squat. Veja o nome em github.com/yuhonas/free-exercise-db (pasta exercises)."
-      />
+      <input type="hidden" name="fotoId" value={foto.id ?? ""} />
+      <BuscaFoto fotoId={foto.id} fotoNome={foto.nome} nome={valores?.nome || "Exercício"} termoInicial={valores?.nome ?? ""} aoEscolher={(id, nome) => setFoto({ id, nome })} />
+      {e.fotoId ? <Aviso>{e.fotoId}</Aviso> : null}
       {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
       {estado.ok ? <Aviso tipo="ok">{estado.ok}</Aviso> : null}
       <BotaoEnviar>{valores ? "Salvar alterações" : "Criar exercício"}</BotaoEnviar>

@@ -15,6 +15,9 @@ const cabecalhosSeguranca = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Importação de treino por imagem/PDF: até 6 MB de arquivos + margem do multipart. Vale para todas as
+  // Server Actions, que continuam exigindo sessão e validando a entrada.
+  experimental: { serverActions: { bodySizeLimit: "7mb" } },
   async headers() {
     return [{ source: "/:path*", headers: cabecalhosSeguranca }];
   },

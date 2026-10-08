@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { montarPlanoParaGravar } from "@/lib/ia/plano";
-import { escolherLigacao, termoParaCatalogo } from "@/lib/ia/catalogo";
+import { melhorCandidato, parecido, termoParaCatalogo } from "@/lib/ia/catalogo";
 import type { ExercicioRascunho, Rascunho } from "@/lib/ia/rascunho";
 
 const ex = (extra: Partial<ExercicioRascunho> = {}): ExercicioRascunho => ({
@@ -71,9 +71,20 @@ describe("busca no catálogo", () => {
     expect(termoParaCatalogo("Bench Press")).toEqual(["bench", "press"]);
     expect(termoParaCatalogo("  ")).toEqual([]);
   });
-  it("só liga sozinho com semelhança alta", () => {
-    expect(escolherLigacao({ id: "a", nomeEn: "x", similaridade: 0.9 })?.id).toBe("a");
-    expect(escolherLigacao({ id: "a", nomeEn: "x", similaridade: 0.4 })).toBeNull();
-    expect(escolherLigacao(undefined)).toBeNull();
+  it("só liga sozinho quando o nome é praticamente o mesmo", () => {
+    const cands = [
+      { id: "a", nomeEn: "One Arm Lat Pulldown" },
+      { id: "b", nomeEn: "Lat Pulldown" },
+      { id: "c", nomeEn: "Wide-Grip Lat Pulldown" },
+    ];
+    expect(melhorCandidato("Lat Pulldown", cands)?.id).toBe("b");
+    expect(melhorCandidato("Dumbbell Lateral Raise", [{ id: "x", nomeEn: "Dumbbell Lying Rear Lateral Raise" }])).toBeNull();
+    expect(melhorCandidato("Lat Pulldown", [{ id: "a", nomeEn: "One Arm Lat Pulldown" }])).toBeNull();
+    expect(melhorCandidato("Barbell Bench Press", [])).toBeNull();
+  });
+  it("semelhança de nomes ignora acento, maiúscula e pontuação", () => {
+    expect(parecido("Triceps Pushdown", "triceps  push-down")).toBeLessThan(1);
+    expect(parecido("Dumbbell Bench Press", "dumbbell bench press")).toBe(1);
+    expect(parecido("", "x")).toBe(0);
   });
 });

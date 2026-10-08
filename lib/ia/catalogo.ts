@@ -53,11 +53,35 @@ export function termoParaCatalogo(digitado: string): string[] {
   return palavrasDaBusca(normalizarBusca(t)).filter((p) => !LIGACOES.has(p));
 }
 
-export type CandidatoFoto = { id: string; nomeEn: string; similaridade: number };
+export type CandidatoFoto = { id: string; nomeEn: string };
 
-/** Só liga sozinho quando a semelhança é alta; abaixo disso o usuário escolhe. */
-export const SIMILARIDADE_LIGACAO = 0.6;
+/** Só liga sozinho quando as palavras do nome são praticamente as mesmas; abaixo disso o usuário escolhe. */
+export const PARECIDO_MINIMO = 0.75;
 
-export function escolherLigacao(candidato: CandidatoFoto | undefined): CandidatoFoto | null {
-  return candidato && candidato.similaridade >= SIMILARIDADE_LIGACAO ? candidato : null;
+function palavrasDoNome(nome: string): Set<string> {
+  return new Set(normalizarBusca(nome).split(" ").filter(Boolean));
+}
+
+/** Semelhança entre dois nomes = palavras em comum / palavras no total (0 a 1). */
+export function parecido(a: string, b: string): number {
+  const pa = palavrasDoNome(a);
+  const pb = palavrasDoNome(b);
+  if (pa.size === 0 || pb.size === 0) return 0;
+  let comuns = 0;
+  for (const p of pa) if (pb.has(p)) comuns++;
+  return comuns / (pa.size + pb.size - comuns);
+}
+
+/** Escolhe o candidato mais parecido com o nome buscado, ou null se nenhum for parecido o bastante. */
+export function melhorCandidato(nomeBuscado: string, candidatos: ReadonlyArray<CandidatoFoto>): CandidatoFoto | null {
+  let melhor: CandidatoFoto | null = null;
+  let nota = 0;
+  for (const c of candidatos) {
+    const n = parecido(nomeBuscado, c.nomeEn);
+    if (n > nota || (n === nota && melhor && c.nomeEn.length < melhor.nomeEn.length)) {
+      melhor = c;
+      nota = n;
+    }
+  }
+  return melhor && nota >= PARECIDO_MINIMO ? melhor : null;
 }

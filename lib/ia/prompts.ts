@@ -1,7 +1,7 @@
 // Instruções e montagem do que é enviado à IA (funções puras). A pré-visualização mostrada ao
 // usuário e o texto enviado saem da MESMA função: o que se vê é o que vai.
 import { z } from "zod";
-import { limparTexto } from "./rascunho";
+import { LIMITES, limparTexto } from "./rascunho";
 
 export const VERSAO_ACEITE_IA = 1;
 
@@ -127,3 +127,24 @@ export const INSTRUCAO_SISTEMA_IMPORTACAO = [
   "Se faltar séries ou repetições, deixe o campo de séries sem valor e use uma faixa de repetições razoável (ex.: 8 a 12). Se o arquivo não for um plano de treino, devolva a lista de treinos vazia e explique em um alerta.",
   'Traduza os nomes para português do Brasil em "nome_pt" e preencha "nome_en".',
 ].join("\n");
+
+// ─── Avisos fixos (escritos pelo app, nunca dependem do modelo) ───
+
+export const AVISO_ESTIMATIVA = "Rascunho gerado por IA. Confira tudo antes de salvar: não substitui a orientação de um profissional de educação física ou de saúde.";
+export const AVISO_LIMITACAO = "Você informou uma limitação ou lesão. Converse com um profissional de saúde ou educador físico antes de seguir este plano.";
+
+/** Junta os alertas da IA com o aviso fixo de limitação (quando houver), respeitando o limite de alertas. */
+export function alertasFinais(alertasIa: ReadonlyArray<string>, limitacoes: string): string[] {
+  const fixos = textoLivre(limitacoes, 300) ? [AVISO_LIMITACAO] : [];
+  return [...fixos, ...alertasIa].slice(0, LIMITES.alertas);
+}
+
+/** Idade em anos completos na data de referência (AAAA-MM-DD). */
+export function idadeEmAnos(nascimento: string | null, hoje: string): number | null {
+  if (!nascimento || !/^\d{4}-\d{2}-\d{2}$/.test(nascimento)) return null;
+  const [an, mn, dn] = nascimento.split("-").map(Number);
+  const [ah, mh, dh] = hoje.split("-").map(Number);
+  let idade = ah - an;
+  if (mh < mn || (mh === mn && dh < dn)) idade--;
+  return idade >= 0 && idade <= 120 ? idade : null;
+}

@@ -4,6 +4,9 @@ import { and, eq, lt, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { perfis, usoIa } from "@/lib/db/schema";
 import { LIMITE_DIARIO, type TipoUsoIa } from "@/lib/ia/config";
+import { idadeEmAnos, type CorpoPerfil } from "@/lib/ia/prompts";
+import { listarPesagens } from "./corpo";
+import { obterPerfil } from "./perfil";
 import { exigirId } from "./util";
 
 export async function obterAceiteIa(userId: string): Promise<{ versao: number; em: Date } | null> {
@@ -53,4 +56,16 @@ export async function usoDoDia(userId: string, data: string, tipo: TipoUsoIa): P
     .where(and(eq(usoIa.userId, userId), eq(usoIa.data, data), eq(usoIa.tipo, tipo)))
     .limit(1);
   return { usadas: r?.c ?? 0, limite: LIMITE_DIARIO[tipo] };
+}
+
+/** Dados do corpo do próprio usuário, para a prévia e o envio (o app só usa o que o usuário marcar). */
+export async function corpoParaIa(userId: string, hoje: string): Promise<CorpoPerfil> {
+  exigirId(userId);
+  const [perfil, pesagens] = await Promise.all([obterPerfil(userId), listarPesagens(userId, null, 1)]);
+  return {
+    sexo: perfil?.sexo ?? null,
+    idadeAnos: idadeEmAnos(perfil?.dataNascimento ?? null, hoje),
+    alturaCm: perfil?.alturaCm ?? null,
+    pesoKg: pesagens[0]?.pesoKg ?? null,
+  };
 }

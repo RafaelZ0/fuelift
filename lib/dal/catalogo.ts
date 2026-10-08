@@ -4,7 +4,7 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { catalogoExercicios } from "@/lib/db/schema";
 import { escaparLike, normalizarBusca } from "@/lib/busca";
-import { escolherLigacao, termoParaCatalogo, type CandidatoFoto } from "@/lib/ia/catalogo";
+import { melhorCandidato, termoParaCatalogo, type CandidatoFoto } from "@/lib/ia/catalogo";
 
 // O catálogo é público (domínio público) e o app só lê; não há user_id aqui.
 
@@ -43,26 +43,24 @@ export async function idsComFoto(ids: string[]): Promise<Set<string>> {
   return new Set(l.map((x) => x.id));
 }
 
-/** Melhor correspondência do catálogo para cada nome em inglês (uma consulta só). Só liga com semelhança alta. */
+/** Melhor correspondência do catálogo para cada nome em inglês (uma consulta só). Só liga se o nome for muito parecido. */
 export async function ligarAoCatalogo(nomesEn: string[]): Promise<Array<{ id: string; nomeEn: string } | null>> {
   const normalizados = nomesEn.map((n) => normalizarBusca(n).slice(0, 120));
   if (normalizados.every((n) => n === "")) return nomesEn.map(() => null);
   const lista = sql.join(normalizados.map((n) => sql`${n}`), sql`, `);
   const r = await db.execute(sql`
-    select q.i::int as i, m.id, m.nome_en, m.sim::float8 as sim
+    select q.i::int as i, m.id, m.nome_en
     from unnest(array[${lista}]::text[]) with ordinality as q(n, i)
     cross join lateral (
-      select c.id, c.nome_en, similarity(c.nome_busca, q.n) as sim
+      select c.id, c.nome_en
       from catalogo_exercicios c
       where c.tem_fotos and q.n <> '' and c.nome_busca % q.n
-      order by sim desc, length(c.nome_busca) limit 1
+      order by similarity(c.nome_busca, q.n) desc, length(c.nome_busca)
+      limit 6
     ) m`);
-  const porIndice = new Map<number, CandidatoFoto>();
-  for (const l of r.rows as Array<{ i: number; id: string; nome_en: string; sim: number }>) {
-    porIndice.set(l.i, { id: l.id, nomeEn: l.nome_en, similaridade: l.sim });
+  const porIndice = new Map<number, CandidatoFoto[]>();
+  for (const l of r.rows as Array<{ i: number; id: string; nome_en: string }>) {
+    porIndice.set(l.i, [...(porIndice.get(l.i) ?? []), { id: l.id, nomeEn: l.nome_en }]);
   }
-  return nomesEn.map((_, idx) => {
-    const c = escolherLigacao(porIndice.get(idx + 1));
-    return c ? { id: c.id, nomeEn: c.nomeEn } : null;
-  });
+  return nomesEn.map((nome, idx) => melhorCandidato(nome, porIndice.get(idx + 1) ?? []));
 }

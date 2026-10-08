@@ -27,6 +27,7 @@ import {
   salvarObservacaoDaSessao,
   salvarSerie,
 } from "@/lib/dal/treino";
+import { idsComFoto } from "@/lib/dal/catalogo";
 import { registrarErro } from "@/lib/log";
 import { errosPorCampo, formParaObjeto, type ErrosCampos } from "@/lib/validacao/comum";
 import {
@@ -56,6 +57,8 @@ export async function salvarExercicio(_: EstadoTreino, form: FormData): Promise<
   const { userId } = await exigirUsuario();
   const r = exercicioSchema.safeParse(formParaObjeto(form, ["nome", "grupo", "unilateral", "cargaPorHalter", "medida", "fotoId"]));
   if (!r.success) return { erros: errosPorCampo(r.error) };
+  // A foto só vale se existir no catálogo (o id vem do navegador, então é conferido aqui).
+  if (r.data.fotoId && !(await idsComFoto([r.data.fotoId])).has(r.data.fotoId)) return { erros: { fotoId: "Escolha uma foto da busca." } };
   const alvo = form.get("exercicioId");
   const editar = typeof alvo === "string" && alvo !== "" ? idSchema.safeParse(alvo) : null;
   if (editar && !editar.success) return { erro: "Exercício inválido." };

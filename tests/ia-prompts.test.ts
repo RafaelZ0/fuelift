@@ -104,3 +104,21 @@ describe("instruções do sistema", () => {
     expect(INSTRUCAO_SISTEMA_IMPORTACAO).toMatch(/Não invente/);
   });
 });
+
+describe("avisos fixos e idade", () => {
+  it("limitação informada sempre gera o aviso fixo, mesmo sem alertas da IA", async () => {
+    const { alertasFinais, AVISO_LIMITACAO } = await import("@/lib/ia/prompts");
+    expect(alertasFinais([], "dor no joelho")).toEqual([AVISO_LIMITACAO]);
+    expect(alertasFinais(["a"], "")).toEqual(["a"]);
+    expect(alertasFinais(["a", "b", "c", "d", "e"], "lesão")).toHaveLength(5);
+    expect(alertasFinais(["a"], "   ")).toEqual(["a"]);
+  });
+  it("idade em anos completos", async () => {
+    const { idadeEmAnos } = await import("@/lib/ia/prompts");
+    expect(idadeEmAnos("1990-10-08", "2026-10-08")).toBe(36);
+    expect(idadeEmAnos("1990-10-09", "2026-10-08")).toBe(35);
+    expect(idadeEmAnos(null, "2026-10-08")).toBeNull();
+    expect(idadeEmAnos("lixo", "2026-10-08")).toBeNull();
+    expect(idadeEmAnos("2030-01-01", "2026-10-08")).toBeNull();
+  });
+});

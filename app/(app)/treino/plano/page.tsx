@@ -26,6 +26,10 @@ export default async function PaginaPlano() {
           ‹ Voltar
         </Link>
         <h1 className="text-3xl font-black">Criar plano</h1>
+        <Link href="/treino/ia" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque">
+          Criar ou importar com IA
+        </Link>
+        <p className="text-suave">Ou monte o plano você mesmo:</p>
         <FormPlano hoje={hoje} />
       </div>
     );
@@ -40,6 +44,9 @@ export default async function PaginaPlano() {
         ‹ Voltar
       </Link>
       <h1 className="text-3xl font-black">Plano de treino</h1>
+      <Link href="/treino/ia" className="flex min-h-14 items-center justify-center rounded-full border-2 border-marca text-lg font-bold">
+        Criar ou importar com IA
+      </Link>
 
       <section aria-labelledby="config" className="space-y-4">
         <h2 id="config" className="text-2xl font-bold">Plano</h2>

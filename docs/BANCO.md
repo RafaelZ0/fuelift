@@ -59,9 +59,14 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 | `LIMITES_HMAC_KEY` | chave D | chave E | chave F | chave G |
 | `ADMIN_EMAILS` | seu e-mail | — | seu e-mail | seu e-mail |
 | `BANCO_DE_TESTE` | — | `sim` | — | — |
+| `GEMINI_API_KEY` | chave do AI Studio | — | chave do AI Studio (sensitive) | — |
+| `GEMINI_MODEL` | opcional | — | opcional | — |
+| `IA_PLANO` | `gratuito` | — | `gratuito` | — |
+| `IA_SOMENTE_ADMIN` | opcional | — | opcional | — |
 
 - `LIMITES_HMAC_KEY` é a chave do HMAC-SHA256 que esconde e-mail e IP na tabela `limites`. Sem ela (ou com menos de 32 caracteres), login, cadastro e recuperação de senha ficam bloqueados.
 - Gere cada segredo com `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Use um segredo diferente em cada ambiente.
+- `GEMINI_API_KEY` é criada em aistudio.google.com/apikey e fica só no servidor. Sem ela, a tela `/treino/ia` avisa que a IA não está ativada. `IA_SOMENTE_ADMIN=true` libera a IA só para o administrador. Modelos antigos (como `gemini-2.5-flash`) deixam de aceitar novos usuários; o padrão é `gemini-3.5-flash`.
 - Nenhuma variável começa com `NEXT_PUBLIC_`.
 - No Vercel, **não** ative a integração do Neon que cria um branch por preview. Os previews devem usar o branch `dev`.
 
@@ -79,9 +84,10 @@ Para produção, use `npm run db:migrar:producao`, que lê a URL do dono do bran
 ```
 npm run taco:importar -- --alvo dev|test|producao [--confirmar]   # TACO + complementos
 npm run ibge:importar -- --alvo dev|test|producao [--confirmar]   # medidas referidas do IBGE
+npm run exercicios:importar -- --alvo dev|test|producao [--confirmar]   # catálogo de exercícios com fotos (Free Exercise DB)
 ```
 
-Os dois são idempotentes, conferem o SHA-256 do arquivo e gravam tudo numa transação (ou nada). Produção exige `--confirmar` e usa `.env.main.local`.
+Os três são idempotentes, conferem o SHA-256 do arquivo e gravam tudo numa transação (ou nada). Produção exige `--confirmar` e usa `.env.main.local`.
 
 ## 7. Testes
 
