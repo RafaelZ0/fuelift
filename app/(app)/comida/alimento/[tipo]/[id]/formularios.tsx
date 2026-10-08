@@ -36,10 +36,12 @@ export function FormAdicionar({
   rotuloRefeicao: string;
 }) {
   const [estado, acao] = useActionState<Estado, FormData>(adicionar, {});
-  // Suas medidas primeiro; depois as sugestões do IBGE (com o nome de origem).
+  // Suas medidas primeiro; depois as sugestões do IBGE ainda não fixadas (com o nome de origem).
+  const jaFixadas = new Set(medidas.map((m) => `${m.nome.toLowerCase()}|${m.gramas}`));
+  const novas = sugestoes.filter((x) => !jaFixadas.has(`${x.medida.slice(0, 40).toLowerCase()}|${x.gramas}`));
   const opcoes: Opcao[] = [
     ...medidas.map((m) => ({ chave: `minha:${m.id}`, origem: "minha" as const, id: m.id, nome: m.nome, gramas: m.gramas })),
-    ...sugestoes.map((x) => ({ chave: `ibge:${x.id}`, origem: "ibge" as const, id: x.id, nome: x.medida, gramas: x.gramas, ref: x.refAlimento })),
+    ...novas.map((x) => ({ chave: `ibge:${x.id}`, origem: "ibge" as const, id: x.id, nome: x.medida, gramas: x.gramas, ref: x.refAlimento })),
   ];
   const [modo, setModo] = useState<"gramas" | "medida">(opcoes.length > 0 ? "medida" : "gramas");
   const [gramasTxt, setGramasTxt] = useState("100");
