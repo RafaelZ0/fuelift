@@ -14,9 +14,11 @@
     "db:migrar": "drizzle-kit migrate",
     "db:migrar:producao": "node scripts/migrar-producao.mjs",
     "taco:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-taco.mjs",
-    "ibge:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-ibge.mjs"
+    "ibge:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-ibge.mjs",
+    "exercicios:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-exercicios.mjs"
   },
   "dependencies": {
+    "@google/genai": "2.28.0",
     "@neondatabase/auth": "0.5.0-beta",
     "@neondatabase/serverless": "1.2.0",
     "drizzle-orm": "0.45.3",

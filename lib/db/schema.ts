@@ -32,6 +32,9 @@ export const perfis = pgTable(
     inicioPlano: date("inicio_plano"),
     // Dia da semana (0 = domingo ... 6 = sábado) do lembrete da aplicação semanal.
     diaAplicacao: integer("dia_aplicacao"),
+    // Aceite do aviso de uso da IA (versão do texto e quando foi aceito).
+    iaAceiteVersao: integer("ia_aceite_versao"),
+    iaAceiteEm: timestamp("ia_aceite_em", { withTimezone: true }),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
     atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -670,3 +673,44 @@ export type TreinoExercicio = typeof treinoExercicios.$inferSelect;
 export type SessaoTreino = typeof sessoesTreino.$inferSelect;
 export type SerieTreino = typeof seriesTreino.$inferSelect;
 export type Pesagem = typeof pesagens.$inferSelect;
+
+// ───────────────────────── Fase 3B: IA no treino ─────────────────────────
+
+// Catálogo de exercícios do Free Exercise DB (domínio público). Só leitura para o app.
+// Nomes em inglês; cada exercício tem 2 imagens em exercises/<id>/0.jpg e 1.jpg.
+export const catalogoExercicios = pgTable(
+  "catalogo_exercicios",
+  {
+    id: text("id").primaryKey(),
+    nomeEn: text("nome_en").notNull(),
+    nomeBusca: text("nome_busca").notNull(),
+    equipamento: text("equipamento"),
+    categoria: text("categoria"),
+    nivel: text("nivel"),
+    musculosPrimarios: jsonb("musculos_primarios").$type<string[]>().notNull().default([]),
+    temFotos: boolean("tem_fotos").notNull().default(true),
+  },
+  (t) => [
+    index("catalogo_exercicios_nome_busca_trgm").using("gin", t.nomeBusca.op("gin_trgm_ops")),
+    check("catalogo_exercicios_id_check", sql`${t.id} ~ '^[A-Za-z0-9_-]{1,120}$'`),
+    check("catalogo_exercicios_nome_check", sql`char_length(${t.nomeEn}) between 1 and 120`),
+  ],
+);
+
+// Chamadas à IA por usuário, dia e tipo (limite diário aplicado no servidor).
+export const usoIa = pgTable(
+  "uso_ia",
+  {
+    userId: dono(),
+    data: date("data").notNull(),
+    tipo: text("tipo").notNull(),
+    chamadas: integer("chamadas").notNull().default(0),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.data, t.tipo] }),
+    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao')`),
+    check("uso_ia_chamadas_check", sql`${t.chamadas} between 0 and 10000`),
+  ],
+);
+
+export type CatalogoExercicio = typeof catalogoExercicios.$inferSelect;

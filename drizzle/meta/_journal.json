@@ -50,6 +50,20 @@
       "when": 1791461544289,
       "tag": "0006_fase3a_treino_agua_corpo",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1791489242561,
+      "tag": "0007_fase3b_catalogo_uso_ia",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1791489245977,
+      "tag": "0008_fase3b_permissoes",
+      "breakpoints": true
     }
   ]
 }
