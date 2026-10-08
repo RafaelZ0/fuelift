@@ -18,3 +18,15 @@
 Carboidrato negativo (artefato do cálculo por diferença) vira 0. A marcação original fica em `alimentos_base.marcacoes`. O carboidrato da TACO é calculado por diferença e inclui a fibra.
 
 Importação: `npm run taco:importar -- --alvo dev` (ver `scripts/importar-taco.mjs`).
+
+## Valores complementares (`complementos.json`)
+
+Preenchem só campos desconhecidos (`*`) e ficam marcados com a fonte em `marcacoes`. Aprovados pelo usuário em 08/10/2026.
+
+| Código | Alimento | Fonte |
+|---|---|---|
+| 458 | Leite, de vaca, integral | USDA FoodData Central, FDC 172217 (domínio público) |
+| 457 | Leite, de vaca, desnatado, UHT | USDA FoodData Central, FDC 173432 (domínio público) |
+| 450 | Iogurte, sabor abacaxi | média dos iogurtes sabor morango (451) e pêssego (452) da própria TACO |
+
+Sem fonte confiável, o 591 (Coco, verde, cru) continua sem calorias e não pode ser adicionado ao diário.

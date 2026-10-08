@@ -12,7 +12,7 @@ import {
   paraPor100g,
   somarDia,
 } from "@/lib/nutricao";
-import { converterCelula, extrairAlimentos } from "../scripts/importar-taco.mjs";
+import { aplicarComplementos, converterCelula, extrairAlimentos } from "../scripts/importar-taco.mjs";
 
 const arroz = { kcal: 128.26, proteinaG: 2.52, carboG: 28.06, gorduraG: 0.23, fibraG: 1.56 };
 
@@ -128,5 +128,18 @@ describe("TACO: marcações (padrão FAO/INFOODS)", () => {
     expect(arrozIntegral?.kcal).toBe(123.53);
     expect(alimentos.find((a) => a.codigo === "458")?.kcal).toBeNull(); // leite integral: "*"
     expect(alimentos.find((a) => a.codigo === "516")?.kcal).toBe(0); // sal: "NA"
+  });
+});
+
+describe("TACO: valores complementares aprovados", () => {
+  it("preenchem só campos desconhecidos e registram a fonte", () => {
+    const { alimentos } = extrairAlimentos(readFileSync("dados/taco/Taco-4a-Edicao.xlsx"));
+    expect(aplicarComplementos(alimentos)).toBe(12);
+    const leite = alimentos.find((a) => a.codigo === "458")!;
+    expect(leite.kcal).toBe(61);
+    expect(leite.sodio_mg).toBe(63.76); // valor da própria TACO, não substituído
+    expect(leite.marcacoes.kcal).toMatchObject({ marca: "*", fonte: "usda" });
+    expect(alimentos.find((a) => a.codigo === "450")!.marcacoes.kcal).toMatchObject({ fonte: "taco-semelhantes" });
+    expect(alimentos.filter((a) => a.kcal === null).map((a) => a.codigo)).toEqual(["591"]);
   });
 });

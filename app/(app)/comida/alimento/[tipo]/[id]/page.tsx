@@ -23,7 +23,14 @@ const ROTULO_MARCA: Record<string, string> = {
 
 function Valor({ v, marca, unidade, kcal = false }: { v: number | null; marca?: Marcacoes[keyof Marcacoes]; unidade: string; kcal?: boolean }) {
   const texto = v === null ? "—" : `${kcal ? formatarKcal(v) : formatarGramas(v)} ${unidade}`;
-  const nota = marca?.fonte === "usda" ? `fonte: USDA (${marca.ref})` : marca?.marca ? ROTULO_MARCA[marca.marca] : null;
+  const nota =
+    marca?.fonte === "usda"
+      ? `valor da USDA (${marca.ref?.split(" (")[0]})`
+      : marca?.fonte === "taco-semelhantes"
+        ? "estimado de alimentos semelhantes da TACO"
+        : marca?.marca
+          ? ROTULO_MARCA[marca.marca]
+          : null;
   return (
     <dd className="text-right">
       <span className="text-lg font-semibold">{texto}</span>

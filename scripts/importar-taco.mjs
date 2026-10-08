@@ -15,7 +15,7 @@ import { lerAba } from "./lib/xlsx.mjs";
 
 const ARQUIVO = "dados/taco/Taco-4a-Edicao.xlsx";
 const SHA256 = "a66b8ec528daeabc63bc2b015fc9bd8c6d76b941c2fc0ed93a4311d449302d14";
-const COMPLEMENTOS = "dados/taco/complementos-usda.json";
+const COMPLEMENTOS = "dados/taco/complementos.json";
 const TOTAL_ESPERADO = 597;
 
 export const FONTE = {
@@ -85,18 +85,21 @@ export function extrairAlimentos(buf) {
 }
 
 /** Aplica valores complementares aprovados (USDA) aos campos desconhecidos, registrando a fonte. */
-function aplicarComplementos(alimentos) {
-  if (!existsSync(COMPLEMENTOS)) return 0;
-  const dados = JSON.parse(readFileSync(COMPLEMENTOS, "utf8"));
+export function aplicarComplementos(alimentos, arquivo = COMPLEMENTOS) {
+  if (!existsSync(arquivo)) return 0;
+  const dados = JSON.parse(readFileSync(arquivo, "utf8"));
+  const FONTES_OK = ["usda", "taco-semelhantes"];
   let n = 0;
   for (const c of dados.itens) {
     const alvo = alimentos.find((x) => x.codigo === String(c.codigo_taco));
     if (!alvo) throw new Error(`complemento para código inexistente ${c.codigo_taco}`);
+    if (alvo.nome !== c.nome_taco) throw new Error(`complemento ${c.codigo_taco}: nome não confere (${alvo.nome})`);
+    if (!FONTES_OK.includes(c.fonte) || !c.ref) throw new Error(`complemento ${c.codigo_taco}: fonte inválida`);
     for (const [campo, valor] of Object.entries(c.valores)) {
       if (alvo[campo] !== null) continue; // só preenche o que a TACO não tem
       if (!(valor >= 0 && valor <= FAIXAS[campo])) throw new Error(`complemento fora da faixa: ${c.codigo_taco} ${campo}`);
       alvo[campo] = valor;
-      alvo.marcacoes[campo] = { ...(alvo.marcacoes[campo] ?? {}), fonte: "usda", ref: `FDC ${c.fdc_id}` };
+      alvo.marcacoes[campo] = { ...(alvo.marcacoes[campo] ?? {}), fonte: c.fonte, ref: c.ref };
       n++;
     }
   }
@@ -133,7 +136,7 @@ async function main() {
 
   const semKcal = alimentos.filter((x) => x.kcal === null);
   console.log(`Arquivo conferido (SHA-256 ok). ${alimentos.length} alimentos válidos.`);
-  console.log(`Valores complementares (USDA) aplicados: ${complementados}.`);
+  console.log(`Valores complementares aplicados (USDA / semelhantes da TACO): ${complementados}.`);
   console.log(`Sem calorias (não poderão ser adicionados): ${semKcal.map((x) => `${x.codigo} ${x.nome}`).join("; ") || "nenhum"}`);
   if (simular) return console.log("Simulação: nada foi gravado.");
 
@@ -152,8 +155,18 @@ async function main() {
     marcacoes: x.marcacoes,
   }));
 
-  // Uma transação: grava a fonte e todos os alimentos, ou nada.
+  // Fonte complementar (USDA), registrada para citação.
+  const usda = existsSync(COMPLEMENTOS) ? JSON.parse(readFileSync(COMPLEMENTOS, "utf8")).fontes?.usda : null;
+  const extra = usda
+    ? [sql`insert into fontes_alimentos (fonte, edicao, titulo, url, termos, citacao)
+          values ('usda', 'sr-legacy', ${usda.titulo}, ${usda.url}, ${usda.termos}, ${usda.citacao})
+          on conflict (fonte, edicao) do update set titulo = excluded.titulo, url = excluded.url, termos = excluded.termos,
+            citacao = excluded.citacao, importado_em = now()`]
+    : [];
+
+  // Uma transação: grava as fontes e todos os alimentos, ou nada.
   await sql.transaction([
+    ...extra,
     sql`insert into fontes_alimentos (fonte, edicao, titulo, url, termos, citacao, arquivo_sha256)
         values (${FONTE.fonte}, ${FONTE.edicao}, ${FONTE.titulo}, ${FONTE.url}, ${FONTE.termos}, ${FONTE.citacao}, ${hash})
         on conflict (fonte, edicao) do update set titulo = excluded.titulo, url = excluded.url, termos = excluded.termos,
