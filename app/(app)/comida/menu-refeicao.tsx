@@ -9,10 +9,10 @@ export function MenuRefeicao({ data, refeicao, temItens }: { data: string; refei
   const [estado, acao] = useActionState<Estado, FormData>(salvarComoRefeicao, {});
   return (
     <details className="group">
-      <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-full border-2 border-linha px-4 font-semibold text-suave">
+      <summary className="flex min-h-12 cursor-pointer list-none items-center rounded-full border-2 border-borda px-4 font-semibold text-suave">
         Mais
       </summary>
-      <div className="mt-3 space-y-3 rounded-2xl border-2 border-linha p-4">
+      <div className="mt-3 space-y-3 rounded-2xl border-2 border-borda p-4">
         <Link href={`/comida/copiar?data=${data}&refeicao=${refeicao}`} className="flex min-h-12 items-center font-semibold underline">
           Copiar de outro dia
         </Link>

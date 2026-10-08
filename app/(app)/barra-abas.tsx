@@ -27,7 +27,7 @@ export function BarraAbas() {
                 href={aba.href}
                 aria-current={ativa ? "page" : undefined}
                 className={`flex min-h-16 flex-col items-center justify-center gap-1 text-xs font-semibold ${
-                  ativa ? "text-destaque" : "text-suave"
+                  ativa ? "text-marca" : "text-suave"
                 }`}
               >
                 <svg

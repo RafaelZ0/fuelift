@@ -1,4 +1,4 @@
-# FuelLift – Fase 1: relatório de segurança (seção 11 do SEGURANCA.md)
+# Kalyft – Fase 1: relatório de segurança (seção 11 do SEGURANCA.md)
 
 Data: 07/10/2026. Situação: código pronto e testado no branch `dev`. **Deploy ainda não feito** (15 commits locais, não enviados ao GitHub).
 

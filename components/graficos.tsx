@@ -10,7 +10,7 @@ export function Barra({ percentual, aviso = false }: { percentual: number; aviso
   const p = Math.max(0, Math.min(100, percentual));
   return (
     <div className="h-1.5 overflow-hidden rounded-full bg-linha" role="progressbar" aria-valuenow={Math.round(p)} aria-valuemin={0} aria-valuemax={100}>
-      <div className={`h-full rounded-full ${aviso ? "bg-erro" : "bg-destaque"} ${PASSOS[Math.round(p / 5)]}`} />
+      <div className={`h-full rounded-full ${aviso ? "bg-aviso" : "bg-destaque"} ${PASSOS[Math.round(p / 5)]}`} />
     </div>
   );
 }
@@ -73,8 +73,8 @@ export function GraficoLinhas({
       ))}
       {linhaMeta != null ? (
         <g>
-          <line x1={M.esq} x2={L - M.dir} y1={py(linhaMeta)} y2={py(linhaMeta)} className="stroke-erro" strokeWidth={1} strokeDasharray="4 3" />
-          <text x={L - M.dir} y={py(linhaMeta) - 3} textAnchor="end" className="fill-erro" fontSize={10}>
+          <line x1={M.esq} x2={L - M.dir} y1={py(linhaMeta)} y2={py(linhaMeta)} className="stroke-apoio-texto" strokeWidth={1} strokeDasharray="4 3" />
+          <text x={L - M.dir} y={py(linhaMeta) - 3} textAnchor="end" className="fill-apoio-texto" fontSize={10}>
             meta {fmt(linhaMeta)} {unidade}
           </text>
         </g>
@@ -84,7 +84,7 @@ export function GraficoLinhas({
           <polyline
             key={s.nome}
             fill="none"
-            className="stroke-destaque"
+            className="stroke-marca"
             strokeWidth={2.5}
             strokeLinejoin="round"
             strokeLinecap="round"

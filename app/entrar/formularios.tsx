@@ -25,7 +25,7 @@ export function FormEntrar() {
         erro={estado.erros?.senha} />
       {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
       {estado.naoVerificado ? (
-        <Link href="/entrar/verificar" className="block font-semibold text-destaque underline">
+        <Link href="/entrar/verificar" className="block font-semibold text-marca underline">
           Digitar código de confirmação
         </Link>
       ) : null}
@@ -63,7 +63,7 @@ export function FormNovaSenha() {
     return (
       <div className="space-y-8">
         <Aviso tipo="ok">{estado.ok}</Aviso>
-        <Link href="/entrar" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo">
+        <Link href="/entrar" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque">
           Entrar
         </Link>
       </div>
@@ -118,7 +118,7 @@ export function FormVerificar() {
         {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
         {estado.ok ? <Aviso tipo="ok">{estado.ok}</Aviso> : null}
         {estado.ok ? (
-          <Link href="/entrar" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo">
+          <Link href="/entrar" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque">
             Entrar
           </Link>
         ) : (

@@ -42,12 +42,12 @@ export function Busca({ volta, children }: { volta: string; children: React.Reac
           placeholder="Buscar alimento"
           autoComplete="off"
           enterKeyHint="search"
-          className="min-h-14 w-full rounded-2xl border-2 border-linha bg-superficie px-4 text-lg font-semibold outline-none placeholder:text-suave focus:border-destaque"
+          className="min-h-14 w-full rounded-2xl border-2 border-borda bg-superficie px-4 text-lg font-semibold outline-none placeholder:text-suave focus:border-marca"
         />
       </label>
       {mostrandoBusca ? (
         <section aria-live="polite" className="space-y-2">
-          {erro ? <p className="text-erro">{erro}</p> : null}
+          {erro ? <p className="text-erro"><span aria-hidden="true">⚠ </span>{erro}</p> : null}
           {buscando && !resultados ? <p className="text-suave">Buscando…</p> : null}
           {resultados && resultados.length === 0 && !erro ? (
             <p className="text-suave">Nada encontrado. Tente outra palavra ou cadastre pelo rótulo.</p>

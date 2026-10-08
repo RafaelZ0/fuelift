@@ -1,6 +1,6 @@
 import { FormCadastro } from "../formularios";
 
-export const metadata = { title: "Criar conta · FuelLift" };
+export const metadata = { title: "Criar conta · Kalyft" };
 
 export default function PaginaCadastro() {
   return (

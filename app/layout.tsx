@@ -12,17 +12,20 @@ const archivo = Archivo({
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "FuelLift",
+  title: "Kalyft",
   description: "Treino e nutrição.",
-  applicationName: "FuelLift",
-  appleWebApp: { capable: true, title: "FuelLift", statusBarStyle: "black-translucent" },
+  applicationName: "Kalyft",
+  appleWebApp: { capable: true, title: "Kalyft", statusBarStyle: "black-translucent" },
   formatDetection: { telephone: false },
   robots: { index: false, follow: false },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0a",
-  colorScheme: "dark",
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)", color: "#121314" },
+    { media: "(prefers-color-scheme: light)", color: "#f6f3ec" },
+  ],
+  colorScheme: "dark light",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

@@ -6,7 +6,7 @@ import { id as idSchema, REFEICOES, ROTULOS_REFEICAO } from "@/lib/validacao/com
 import { Voltar } from "../../comum";
 import { FormEditarRegistro } from "./formulario";
 
-export const metadata = { title: "Editar registro · FuelLift" };
+export const metadata = { title: "Editar registro · Kalyft" };
 
 export default async function PaginaRegistro(props: PageProps<"/comida/registro/[id]">) {
   const { userId } = await exigirUsuario();

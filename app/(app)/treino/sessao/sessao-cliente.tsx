@@ -119,7 +119,7 @@ function Cronometro({ fimMs, aoAcabar, onMais, onPular }: { fimMs: number; aoAca
 
   const horaFim = new Date(fimMs).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
   return (
-    <div role="timer" aria-live="off" className={`fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t-2 px-4 py-3 ${resta === 0 ? "border-destaque bg-destaque text-fundo" : "border-linha bg-superficie"}`}>
+    <div role="timer" aria-live="off" className={`fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-20 border-t-2 px-4 py-3 ${resta === 0 ? "border-marca bg-destaque text-sobre-destaque" : "border-linha bg-superficie"}`}>
       <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase">{resta === 0 ? "Descanso acabou" : "Descanso"}</p>
@@ -146,14 +146,14 @@ function Contador({ rotulo, valor, passo, minimo, onChange, unidade }: { rotulo:
     <div>
       <p className="mb-1 text-xs text-suave">{rotulo}</p>
       <div className="flex items-center gap-2">
-        <button type="button" aria-label={`Diminuir ${rotulo}`} onClick={() => onChange(Math.max(minimo, Math.round((valor - passo) * 100) / 100))} className="min-h-12 min-w-12 rounded-full border-2 border-linha text-xl font-bold">
+        <button type="button" aria-label={`Diminuir ${rotulo}`} onClick={() => onChange(Math.max(minimo, Math.round((valor - passo) * 100) / 100))} className="min-h-12 min-w-12 rounded-full border-2 border-borda text-xl font-bold">
           −
         </button>
         <span className="min-w-14 text-center text-xl font-black tabular-nums">
           {fmt(valor)}
           <span className="ml-0.5 text-xs font-medium text-suave">{unidade}</span>
         </span>
-        <button type="button" aria-label={`Aumentar ${rotulo}`} onClick={() => onChange(Math.round((valor + passo) * 100) / 100)} className="min-h-12 min-w-12 rounded-full border-2 border-linha text-xl font-bold">
+        <button type="button" aria-label={`Aumentar ${rotulo}`} onClick={() => onChange(Math.round((valor + passo) * 100) / 100)} className="min-h-12 min-w-12 rounded-full border-2 border-borda text-xl font-bold">
           +
         </button>
       </div>
@@ -282,7 +282,7 @@ export function SessaoCliente({
                     type="button"
                     aria-pressed={o.id === op.id}
                     onClick={() => setEscolha((e) => ({ ...e, [item.id]: o.id }))}
-                    className={`min-h-11 rounded-full border-2 px-4 text-sm font-semibold ${o.id === op.id ? "border-destaque text-texto" : "border-linha text-suave"}`}
+                    className={`min-h-11 rounded-full border-2 px-4 text-sm font-semibold ${o.id === op.id ? "border-marca text-texto" : "border-borda text-suave"}`}
                   >
                     {o.principal ? o.nome : `Substituto: ${o.nome}`}
                   </button>
@@ -305,7 +305,7 @@ export function SessaoCliente({
                 <p className="text-suave">
                   {dica.ultima.map((u) => `${fmt(u.cargaKg)} kg × ${u.segundos ?? u.repeticoes}${op.porSegundos ? " s" : ""}`).join(" · ")}
                 </p>
-                {dica.subirCarga ? <p className="mt-1 font-bold text-destaque">Você chegou ao topo da faixa em todas as séries. Que tal subir a carga?</p> : null}
+                {dica.subirCarga ? <p className="mt-1 font-bold text-marca">Você chegou ao topo da faixa em todas as séries. Que tal subir a carga?</p> : null}
               </div>
             ) : null}
 
@@ -313,7 +313,7 @@ export function SessaoCliente({
               {Array.from({ length: item.series }, (_, k) => k + 1).map((n) => {
                 const s = { ...valorInicial(item, op, n), ...series[chave(op.id, n)] };
                 return (
-                  <li key={n} className={`rounded-2xl border-2 p-3 ${s.feita ? "border-destaque" : "border-linha"}`}>
+                  <li key={n} className={`rounded-2xl border-2 p-3 ${s.feita ? "border-marca" : "border-borda"}`}>
                     <p className="mb-2 text-sm font-bold text-suave">Série {n}</p>
                     <div className="flex flex-wrap items-end justify-between gap-3">
                       <Contador rotulo="Carga" valor={s.carga} passo={PASSO_CARGA} minimo={0} unidade="kg" onChange={(v) => mudar(item, op, n, { carga: v })} />
@@ -331,12 +331,12 @@ export function SessaoCliente({
                         type="button"
                         disabled={s.salvando}
                         onClick={() => void marcarFeita(item, op, n)}
-                        className={`min-h-12 flex-1 rounded-full font-bold ${s.feita ? "border-2 border-destaque text-destaque" : "bg-destaque text-fundo"} disabled:opacity-60`}
+                        className={`min-h-12 flex-1 rounded-full font-bold ${s.feita ? "border-2 border-marca text-marca" : "bg-destaque text-sobre-destaque"} disabled:opacity-60`}
                       >
                         {s.salvando ? "Salvando…" : s.feita ? "Feita ✓ (salvar de novo)" : "Feito"}
                       </button>
                       {s.feita ? (
-                        <button type="button" onClick={() => void desfazer(item, op, n)} className="min-h-12 rounded-full border-2 border-linha px-4 text-sm font-semibold text-suave">
+                        <button type="button" onClick={() => void desfazer(item, op, n)} className="min-h-12 rounded-full border-2 border-borda px-4 text-sm font-semibold text-suave">
                           Desfazer
                         </button>
                       ) : null}

@@ -12,7 +12,7 @@ import { favoritar } from "../../../actions";
 import { CitacaoTaco, Voltar, voltaQuery } from "../../../comum";
 import { FormAdicionar, Medidas } from "./formularios";
 
-export const metadata = { title: "Alimento · FuelLift" };
+export const metadata = { title: "Alimento · Kalyft" };
 
 const ROTULO_MARCA: Record<string, string> = {
   Tr: "traço",
@@ -82,7 +82,7 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
               type="submit"
               aria-pressed={favorito}
               aria-label={favorito ? "Remover dos favoritos" : "Adicionar aos favoritos"}
-              className={`flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 text-2xl ${favorito ? "border-destaque text-destaque" : "border-linha text-suave"}`}
+              className={`flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 text-2xl ${favorito ? "border-marca text-marca" : "border-borda text-suave"}`}
             >
               ★
             </button>
@@ -102,7 +102,7 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
       </header>
 
       {alimento.kcal === null ? (
-        <p role="alert" className="rounded-2xl border-2 border-erro p-4 font-medium text-erro">
+        <p role="alert" className="rounded-2xl border-2 border-erro p-4 font-medium text-erro"><span aria-hidden="true">⚠ </span>
           As calorias deste alimento estão em reavaliação na TACO, então ele não pode ser adicionado. Cadastre pelo rótulo do produto.
         </p>
       ) : (

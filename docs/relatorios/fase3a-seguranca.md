@@ -1,4 +1,4 @@
-# FuelLift – Fase 3A: relatório de segurança (seção 11 do SEGURANCA.md)
+# Kalyft – Fase 3A: relatório de segurança (seção 11 do SEGURANCA.md)
 
 Data: 08/10/2026. Escopo: motor de treino (plano manual, execução com cronômetro, agenda, faltas, calendário, evolução), água, pesagens e aplicação semanal. Situação: pronta e testada nos branches `dev` e `test`. **Produção ainda não recebeu** a migration `0006` nem o código (aguarda aprovação).
 

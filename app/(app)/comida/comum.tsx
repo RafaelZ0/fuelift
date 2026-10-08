@@ -21,7 +21,7 @@ export function ListaAlimentos({ itens, volta }: { itens: AlimentoResumo[]; volt
           >
             <span>
               <span className="block font-medium">
-                {a.favorito ? <span aria-label="favorito" className="text-destaque">★ </span> : null}
+                {a.favorito ? <span aria-label="favorito" className="text-apoio-texto">★ </span> : null}
                 {a.nome}
               </span>
               <span className="text-sm text-suave">

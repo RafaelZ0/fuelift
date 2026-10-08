@@ -8,7 +8,7 @@
 
 ## Marcações (legenda da própria planilha)
 
-| Marca | Significado oficial | Como o FuelLift guarda |
+| Marca | Significado oficial | Como o Kalyft guarda |
 |---|---|---|
 | `Tr` | traço (abaixo do limite de quantificação) | 0 |
 | `NA` | não aplicável | 0 |

@@ -4,7 +4,7 @@ import { listarMeusAlimentos } from "@/lib/dal/alimentos";
 import { formatarKcal } from "@/lib/nutricao";
 import { Voltar } from "../comum";
 
-export const metadata = { title: "Meus alimentos · FuelLift" };
+export const metadata = { title: "Meus alimentos · Kalyft" };
 
 export default async function PaginaMeusAlimentos() {
   const { userId } = await exigirUsuario();
@@ -13,7 +13,7 @@ export default async function PaginaMeusAlimentos() {
     <div className="space-y-6">
       <Voltar href="/comida" />
       <h1 className="text-3xl font-black">Meus alimentos</h1>
-      <Link href="/comida/meus-alimentos/novo" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo">
+      <Link href="/comida/meus-alimentos/novo" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque">
         + Cadastrar pelo rótulo
       </Link>
       {alimentos.length === 0 ? (

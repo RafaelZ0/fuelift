@@ -1,4 +1,4 @@
-# FuelLift – Fase 2: relatório de segurança (seção 11 do SEGURANCA.md)
+# Kalyft – Fase 2: relatório de segurança (seção 11 do SEGURANCA.md)
 
 Data: 07/10/2026. Situação: pronta e testada nos branches `dev` e `test`. **Produção ainda não recebeu** as migrations, a TACO nem o código desta fase (aguarda aprovação).
 

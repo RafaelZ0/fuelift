@@ -12,7 +12,7 @@ import {
 } from "../actions";
 import { FormItem, FormPlano, FormTreino } from "./forms";
 
-export const metadata = { title: "Plano de treino · FuelLift" };
+export const metadata = { title: "Plano de treino · Kalyft" };
 
 export default async function PaginaPlano() {
   const { userId } = await exigirUsuario();
@@ -61,7 +61,7 @@ export default async function PaginaPlano() {
         {lista.map((t, idx) => {
           const itens = itensPorTreino[idx];
           return (
-            <article key={t.id} className="space-y-4 rounded-2xl border-2 border-linha p-4">
+            <article key={t.id} className="space-y-4 rounded-2xl border-2 border-borda p-4">
               <div>
                 <h3 className="text-xl font-black">{t.nome}</h3>
                 {t.foco ? <p className="text-sm text-suave">{t.foco}</p> : null}
@@ -106,7 +106,7 @@ export default async function PaginaPlano() {
                       {todos.filter((x) => x.id !== i.exercicio.id && !i.substitutos.some((s) => s.id === x.id)).length > 0 ? (
                         <form action={adicionarSubstitutoAoItem} className="mt-2 flex gap-2">
                           <input type="hidden" name="itemId" value={i.id} />
-                          <select name="exercicioId" className="min-h-11 flex-1 rounded-xl border-2 border-linha bg-superficie px-2 [color-scheme:dark]">
+                          <select name="exercicioId" className="min-h-11 flex-1 rounded-xl border-2 border-borda bg-superficie px-2">
                             {todos
                               .filter((x) => x.id !== i.exercicio.id && !i.substitutos.some((s) => s.id === x.id))
                               .map((x) => (
@@ -115,7 +115,7 @@ export default async function PaginaPlano() {
                                 </option>
                               ))}
                           </select>
-                          <button type="submit" className="min-h-11 rounded-full border-2 border-linha px-4 font-semibold">
+                          <button type="submit" className="min-h-11 rounded-full border-2 border-borda px-4 font-semibold">
                             Adicionar
                           </button>
                         </form>
@@ -145,7 +145,7 @@ export default async function PaginaPlano() {
             </article>
           );
         })}
-        <div className="space-y-3 rounded-2xl border-2 border-dashed border-linha p-4">
+        <div className="space-y-3 rounded-2xl border-2 border-dashed border-borda p-4">
           <h3 className="text-lg font-bold">Novo treino</h3>
           <FormTreino />
         </div>
@@ -160,7 +160,7 @@ export default async function PaginaPlano() {
                 <form action={definirAgendaDoDia} className="flex items-center gap-2">
                   <input type="hidden" name="diaSemana" value={dia} />
                   <span className="w-20 shrink-0 font-semibold">{nome}</span>
-                  <select name="treinoId" defaultValue={agenda.get(dia) ?? ""} className="min-h-12 flex-1 rounded-xl border-2 border-linha bg-superficie px-2 [color-scheme:dark]">
+                  <select name="treinoId" defaultValue={agenda.get(dia) ?? ""} className="min-h-12 flex-1 rounded-xl border-2 border-borda bg-superficie px-2">
                     <option value="">Descanso</option>
                     {lista.map((t) => (
                       <option key={t.id} value={t.id}>
@@ -168,7 +168,7 @@ export default async function PaginaPlano() {
                       </option>
                     ))}
                   </select>
-                  <button type="submit" className="min-h-12 rounded-full border-2 border-linha px-4 font-semibold">
+                  <button type="submit" className="min-h-12 rounded-full border-2 border-borda px-4 font-semibold">
                     Salvar
                   </button>
                 </form>

@@ -6,7 +6,7 @@ import { apagarRefeicaoSalva } from "../actions";
 import { Voltar } from "../comum";
 import { UsarRefeicao } from "./usar";
 
-export const metadata = { title: "Refeições salvas · FuelLift" };
+export const metadata = { title: "Refeições salvas · Kalyft" };
 
 export default async function PaginaRefeicoes(props: PageProps<"/comida/refeicoes">) {
   const { userId } = await exigirUsuario();
@@ -25,7 +25,7 @@ export default async function PaginaRefeicoes(props: PageProps<"/comida/refeicoe
       {salvas.length === 0 ? <p className="text-suave">Nenhuma refeição salva ainda.</p> : null}
       <ul className="space-y-4">
         {salvas.map((s) => (
-          <li key={s.id} className="space-y-3 rounded-2xl border-2 border-linha p-4">
+          <li key={s.id} className="space-y-3 rounded-2xl border-2 border-borda p-4">
             <div className="flex items-baseline justify-between gap-4">
               <span className="text-lg font-bold">{s.nome}</span>
               <span className="text-sm text-suave">{s.itens} itens</span>

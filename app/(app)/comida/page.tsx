@@ -9,7 +9,7 @@ import { dataDiario, REFEICOES, ROTULOS_REFEICAO } from "@/lib/validacao/comida"
 import { MenuRefeicao } from "./menu-refeicao";
 import { PainelAgua } from "./painel-agua";
 
-export const metadata = { title: "Comida · FuelLift" };
+export const metadata = { title: "Comida · Kalyft" };
 
 const LINHAS_TOTAIS: Array<{ campo: CampoTotal; rotulo: string; unidade: string; meta: "kcal" | "proteinaG" | "carboG" | "gorduraG" | null }> = [
   { campo: "kcal", rotulo: "Calorias", unidade: "kcal", meta: "kcal" },
@@ -34,27 +34,27 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
       <header className="space-y-4">
         <h1 className="text-4xl font-black tracking-tight">Comida</h1>
         <div className="flex gap-2 text-sm font-semibold">
-          <Link href="/comida/meus-alimentos" className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-linha px-4 text-suave">
+          <Link href="/comida/meus-alimentos" className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-borda px-4 text-suave">
             Meus alimentos
           </Link>
-          <Link href={`/comida/refeicoes?data=${data}`} className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-linha px-4 text-suave">
+          <Link href={`/comida/refeicoes?data=${data}`} className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-borda px-4 text-suave">
             Refeições salvas
           </Link>
         </div>
         <nav aria-label="Dia" className="flex items-center justify-between">
-          <Link href={`/comida?data=${somarDias(data, -1)}`} aria-label="Dia anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+          <Link href={`/comida?data=${somarDias(data, -1)}`} aria-label="Dia anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
             ‹
           </Link>
           <div className="text-center">
             <p className="text-xl font-bold">{rotuloDia(data, hoje)}</p>
             {data !== hoje ? (
-              <Link href="/comida" className="text-sm font-semibold text-destaque underline">
+              <Link href="/comida" className="text-sm font-semibold text-marca underline">
                 Voltar para hoje
               </Link>
             ) : null}
           </div>
           {data < hoje ? (
-            <Link href={`/comida?data=${somarDias(data, 1)}`} aria-label="Próximo dia" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+            <Link href={`/comida?data=${somarDias(data, 1)}`} aria-label="Próximo dia" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
               ›
             </Link>
           ) : (
@@ -81,10 +81,13 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
                 </span>
               </div>
               {c.meta !== null ? (
+                <>
                 <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-linha">
                   <progress className="sr-only" value={largura} max={100} />
-                  <div className={`h-full rounded-full ${c.percentual! > 110 ? "bg-erro" : "bg-destaque"} ${larguraClasse(largura)}`} />
+                  <div className={`h-full rounded-full ${c.percentual! > 110 ? "bg-aviso" : "bg-destaque"} ${larguraClasse(largura)}`} />
                 </div>
+                {c.percentual! > 110 ? <p className="mt-1 text-sm font-semibold text-aviso"><span aria-hidden="true">! </span>Acima da meta</p> : null}
+                </>
               ) : null}
             </div>
           );
@@ -126,7 +129,7 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
               ))}
             </ul>
             <div className="flex items-center gap-3 pt-1">
-              <Link href={`/comida/adicionar?data=${data}&refeicao=${ref}`} className="flex min-h-12 flex-1 items-center justify-center rounded-full bg-destaque font-bold text-fundo">
+              <Link href={`/comida/adicionar?data=${data}&refeicao=${ref}`} className="flex min-h-12 flex-1 items-center justify-center rounded-full bg-destaque font-bold text-sobre-destaque">
                 + Adicionar
               </Link>
               <MenuRefeicao data={data} refeicao={ref} temItens={itens.length > 0} />

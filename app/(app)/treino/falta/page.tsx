@@ -7,7 +7,7 @@ import { treinoDoDia } from "@/lib/treino";
 import { dataAteHoje } from "@/lib/validacao/treino";
 import { FormFalta } from "./form-falta";
 
-export const metadata = { title: "Falta · FuelLift" };
+export const metadata = { title: "Falta · Kalyft" };
 
 export default async function PaginaFalta(props: PageProps<"/treino/falta">) {
   const { userId } = await exigirUsuario();

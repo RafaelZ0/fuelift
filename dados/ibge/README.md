@@ -8,7 +8,7 @@
 - **Citação (dos próprios arquivos):** "Fonte: IBGE, Diretoria de Pesquisas, Coordenação de Trabalho e Rendimento, Pesquisa de Orçamentos Familiares 2008-2009."
 - **Licença:** os arquivos não trazem texto de licença. Dados públicos do IBGE, usados com citação da fonte. Confirmar com o IBGE antes de uso comercial (ver SPEC, "Antes de vender").
 
-## Como o FuelLift usa
+## Como o Kalyft usa
 
 - Só as linhas em que a medida relatada é a própria medida padrão (ex.: UNIDADE → UNIDADE), sem "grama" e "quilo".
 - A medida e o alimento vêm da coluna "descrição do alimento na referência" (ex.: "Pão francês - unidade" = 50 g).

@@ -4,7 +4,7 @@ import { listarExercicios } from "@/lib/dal/treino";
 import { CREDITO_FOTOS } from "@/lib/fotos";
 import { FormExercicio } from "./form-exercicio";
 
-export const metadata = { title: "Exercícios · FuelLift" };
+export const metadata = { title: "Exercícios · Kalyft" };
 
 export default async function PaginaExercicios() {
   const { userId } = await exigirUsuario();

@@ -12,7 +12,7 @@ export default function ErroGlobal({ reset }: { error: Error & { digest?: string
           <button
             type="button"
             onClick={reset}
-            className="mt-10 min-h-14 rounded-full bg-destaque text-lg font-bold text-fundo"
+            className="mt-10 min-h-14 rounded-full bg-destaque text-lg font-bold text-sobre-destaque"
           >
             Tentar de novo
           </button>

@@ -3,7 +3,7 @@ import { exigirLogin } from "@/lib/auth/sessao";
 import { registrarAcesso } from "@/lib/dal/acessos";
 import { sair } from "../acoes";
 
-export const metadata = { title: "Aguardando aprovação · FuelLift" };
+export const metadata = { title: "Aguardando aprovação · Kalyft" };
 
 export default async function PaginaAguardando() {
   const usuario = await exigirLogin();
@@ -23,7 +23,7 @@ export default async function PaginaAguardando() {
           : "Sua conta foi criada e está aguardando aprovação. Volte mais tarde."}
       </p>
       <form action={sair} className="mt-12">
-        <button type="submit" className="min-h-12 rounded-full border-2 border-linha px-5 font-semibold">
+        <button type="submit" className="min-h-12 rounded-full border-2 border-borda px-5 font-semibold">
           Sair
         </button>
       </form>

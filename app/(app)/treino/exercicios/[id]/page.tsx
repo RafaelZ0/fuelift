@@ -10,7 +10,7 @@ import { id as idSchema } from "@/lib/validacao/treino";
 import { apagarExercicio } from "../../actions";
 import { FormExercicio } from "../form-exercicio";
 
-export const metadata = { title: "Exercício · FuelLift" };
+export const metadata = { title: "Exercício · Kalyft" };
 
 export default async function PaginaExercicio(props: PageProps<"/treino/exercicios/[id]">) {
   const { userId } = await exigirUsuario();

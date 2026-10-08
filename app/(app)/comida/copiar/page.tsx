@@ -4,7 +4,7 @@ import { comArtigo, dataDiario, refeicao as refeicaoSchema, REFEICOES, ROTULOS_R
 import { Voltar } from "../comum";
 import { FormCopiar } from "./formulario";
 
-export const metadata = { title: "Copiar refeição · FuelLift" };
+export const metadata = { title: "Copiar refeição · Kalyft" };
 
 export default async function PaginaCopiar(props: PageProps<"/comida/copiar">) {
   await exigirUsuario();

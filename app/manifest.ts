@@ -2,16 +2,16 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "FuelLift",
-    short_name: "FuelLift",
+    name: "Kalyft",
+    short_name: "Kalyft",
     description: "Treino e nutrição.",
     lang: "pt-BR",
     start_url: "/hoje",
     scope: "/",
     display: "standalone",
     orientation: "portrait",
-    background_color: "#0b0b0a",
-    theme_color: "#0b0b0a",
+    background_color: "#121314",
+    theme_color: "#121314",
     icons: [
       { src: "/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

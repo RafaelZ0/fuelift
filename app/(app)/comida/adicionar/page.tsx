@@ -6,7 +6,7 @@ import { dataDiario, refeicao as refeicaoSchema, ROTULOS_REFEICAO } from "@/lib/
 import { CitacaoTaco, ListaAlimentos, Voltar, voltaQuery } from "../comum";
 import { Busca } from "./busca";
 
-export const metadata = { title: "Adicionar alimento · FuelLift" };
+export const metadata = { title: "Adicionar alimento · Kalyft" };
 
 export default async function PaginaAdicionar(props: PageProps<"/comida/adicionar">) {
   const { userId } = await exigirUsuario();
@@ -44,7 +44,7 @@ export default async function PaginaAdicionar(props: PageProps<"/comida/adiciona
       </Busca>
       <Link
         href={`/comida/meus-alimentos/novo${volta}`}
-        className="flex min-h-12 items-center justify-center rounded-full border-2 border-linha font-semibold"
+        className="flex min-h-12 items-center justify-center rounded-full border-2 border-borda font-semibold"
       >
         Não achou? Cadastrar pelo rótulo
       </Link>

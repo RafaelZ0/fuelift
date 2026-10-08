@@ -6,7 +6,7 @@ import { formatarTempo, seriesDoExercicio, treinoDoDia } from "@/lib/treino";
 import { ROTULOS_MOTIVO, dataAteHoje, MOTIVOS } from "@/lib/validacao/treino";
 import { desfazerRegistroDoDia, trocarTreinoDoDia } from "./actions";
 
-export const metadata = { title: "Treino · FuelLift" };
+export const metadata = { title: "Treino · Kalyft" };
 
 export default async function PaginaTreino(props: PageProps<"/treino">) {
   const { userId } = await exigirUsuario();
@@ -22,7 +22,7 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
         ["/treino/plano", "Plano"],
         ["/treino/exercicios", "Exercícios"],
       ].map(([href, rotulo]) => (
-        <Link key={href} href={href} className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-linha px-4 text-suave">
+        <Link key={href} href={href} className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-borda px-4 text-suave">
           {rotulo}
         </Link>
       ))}
@@ -34,7 +34,7 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
       <div className="space-y-8">
         <h1 className="text-4xl font-black tracking-tight">Treino</h1>
         <p className="max-w-sm text-lg text-suave">Você ainda não tem um plano de treino. Monte o seu: cadastre os exercícios e organize os treinos da semana.</p>
-        <Link href="/treino/plano" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo">
+        <Link href="/treino/plano" className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque">
           Criar meu plano
         </Link>
         {links}
@@ -57,19 +57,19 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
       <header className="space-y-4">
         <h1 className="text-4xl font-black tracking-tight">Treino</h1>
         <nav aria-label="Dia" className="flex items-center justify-between">
-          <Link href={`/treino?data=${somarDias(data, -1)}`} aria-label="Dia anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+          <Link href={`/treino?data=${somarDias(data, -1)}`} aria-label="Dia anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
             ‹
           </Link>
           <div className="text-center">
             <p className="text-xl font-bold">{rotuloDia(data, hoje)}</p>
             {data !== hoje ? (
-              <Link href="/treino" className="text-sm font-semibold text-destaque underline">
+              <Link href="/treino" className="text-sm font-semibold text-marca underline">
                 Voltar para hoje
               </Link>
             ) : null}
           </div>
           {data < hoje ? (
-            <Link href={`/treino?data=${somarDias(data, 1)}`} aria-label="Próximo dia" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+            <Link href={`/treino?data=${somarDias(data, 1)}`} aria-label="Próximo dia" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
               ›
             </Link>
           ) : (
@@ -80,11 +80,11 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
       </header>
 
       {sessao ? (
-        <section className="space-y-3 rounded-2xl border-2 border-linha p-4" aria-live="polite">
+        <section className="space-y-3 rounded-2xl border-2 border-borda p-4" aria-live="polite">
           {sessao.status === "feito" ? (
-            <p className="text-lg font-bold text-destaque">Treino feito</p>
+            <p className="text-lg font-bold text-ok"><span aria-hidden="true">✓ </span>Treino feito</p>
           ) : (
-            <p className="text-lg font-bold text-erro">
+            <p className="text-lg font-bold text-aviso"><span aria-hidden="true">! </span>
               Faltou{sessao.motivo ? `: ${ROTULOS_MOTIVO[sessao.motivo as (typeof MOTIVOS)[number]] ?? sessao.motivo}` : ""}
             </p>
           )}
@@ -126,12 +126,12 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
           <div className="grid gap-3">
             <Link
               href={`/treino/sessao?data=${data}`}
-              className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-fundo"
+              className="flex min-h-14 items-center justify-center rounded-full bg-destaque text-lg font-bold text-sobre-destaque"
             >
               {sessao?.status === "feito" ? "Continuar treino" : "Começar treino"}
             </Link>
             {!sessao ? (
-              <Link href={`/treino/falta?data=${data}`} className="flex min-h-12 items-center justify-center rounded-full border-2 border-linha font-semibold">
+              <Link href={`/treino/falta?data=${data}`} className="flex min-h-12 items-center justify-center rounded-full border-2 border-borda font-semibold">
                 Não vou treinar
               </Link>
             ) : null}
@@ -151,7 +151,7 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
           <select
             name="treinoId"
             defaultValue={treinoId ?? "descanso"}
-            className="min-h-12 w-full rounded-xl border-2 border-linha bg-superficie px-3 text-lg font-semibold [color-scheme:dark]"
+            className="min-h-12 w-full rounded-xl border-2 border-borda bg-superficie px-3 text-lg font-semibold"
           >
             {treinos.map((t) => (
               <option key={t.id} value={t.id}>
@@ -162,7 +162,7 @@ export default async function PaginaTreino(props: PageProps<"/treino">) {
             <option value="agenda">Voltar ao da agenda</option>
           </select>
         </label>
-        <button type="submit" className="min-h-12 w-full rounded-full border-2 border-linha font-semibold">
+        <button type="submit" className="min-h-12 w-full rounded-full border-2 border-borda font-semibold">
           Trocar
         </button>
       </form>

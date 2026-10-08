@@ -51,14 +51,14 @@ export function FormItem({ treinoId, exercicios }: { treinoId: string; exercicio
       <input type="hidden" name="treinoId" value={treinoId} />
       <label className="block">
         <span className="mb-2 block text-sm font-medium text-suave">Exercício</span>
-        <select name="exercicioId" className="min-h-12 w-full rounded-xl border-2 border-linha bg-superficie px-3 text-lg font-semibold [color-scheme:dark]">
+        <select name="exercicioId" className="min-h-12 w-full rounded-xl border-2 border-borda bg-superficie px-3 text-lg font-semibold">
           {exercicios.map((x) => (
             <option key={x.id} value={x.id}>
               {x.nome}
             </option>
           ))}
         </select>
-        {e.exercicioId ? <span className="mt-1 block text-sm text-erro">{e.exercicioId}</span> : null}
+        {e.exercicioId ? <span className="mt-1 block text-sm text-erro"><span aria-hidden="true">⚠ </span>{e.exercicioId}</span> : null}
       </label>
       <div className="grid grid-cols-2 gap-4">
         <Campo nome="repsMin" rotulo="Repetições (mín.)" teclado="numeric" maxLength={4} valor="8" erro={e.repsMin} />

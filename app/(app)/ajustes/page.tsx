@@ -8,7 +8,7 @@ import { sair } from "../../acoes";
 import { decidirCadastro } from "./actions";
 import { PainelMetas, PainelPerfil, type MetaTela } from "./paineis";
 
-export const metadata = { title: "Ajustes · FuelLift" };
+export const metadata = { title: "Ajustes · Kalyft" };
 
 // Só os campos necessários vão para o navegador (sem user_id nem ids).
 function paraTela(m: Meta): MetaTela {
@@ -64,10 +64,10 @@ export default async function PaginaAjustes() {
                   <p className="text-sm text-suave">pedido em {formatarDataBr(p.criadoEm.toISOString().slice(0, 10))}</p>
                   <form action={decidirCadastro} className="mt-3 flex gap-3">
                     <input type="hidden" name="alvo" value={p.userId} />
-                    <button name="decisao" value="aprovar" className="min-h-12 flex-1 rounded-full bg-destaque font-bold text-fundo">
+                    <button name="decisao" value="aprovar" className="min-h-12 flex-1 rounded-full bg-destaque font-bold text-sobre-destaque">
                       Aprovar
                     </button>
-                    <button name="decisao" value="recusar" className="min-h-12 flex-1 rounded-full border-2 border-linha font-semibold">
+                    <button name="decisao" value="recusar" className="min-h-12 flex-1 rounded-full border-2 border-borda font-semibold">
                       Recusar
                     </button>
                   </form>
@@ -79,7 +79,7 @@ export default async function PaginaAjustes() {
       ) : null}
 
       <form action={sair}>
-        <button type="submit" className="min-h-12 w-full rounded-full border-2 border-linha font-semibold text-suave">
+        <button type="submit" className="min-h-12 w-full rounded-full border-2 border-borda font-semibold text-suave">
           Sair da conta
         </button>
       </form>

@@ -3,7 +3,7 @@ import { dataDiario, refeicao as refeicaoSchema } from "@/lib/validacao/comida";
 import { Voltar } from "../../comum";
 import { FormAlimento } from "../formulario";
 
-export const metadata = { title: "Cadastrar alimento · FuelLift" };
+export const metadata = { title: "Cadastrar alimento · Kalyft" };
 
 export default async function PaginaNovoAlimento(props: PageProps<"/comida/meus-alimentos/novo">) {
   await exigirUsuario();

@@ -1,20 +1,69 @@
 @import "tailwindcss";
 
-@theme {
-  --color-fundo: #0b0b0a;
-  --color-superficie: #151513;
-  --color-texto: #f4f4ef;
-  --color-suave: #9a9a92;
-  --color-linha: #2a2a26;
-  --color-destaque: #d2f53c;
-  --color-erro: #ff7a66;
+/* Paleta "Anilha". Os valores ficam só aqui; os componentes usam os nomes (bg-fundo, text-marca...).
+   - destaque: preenchimento da marca (botões); sobre-destaque: texto em cima dele.
+   - marca: vermelho para texto, borda e ícone (mais claro no escuro, para manter contraste AA).
+   - apoio: amarelo de preenchimento; apoio-texto: amarelo legível como texto/linha.
+   - ok, aviso e erro são cores de ESTADO e nunca se parecem com o vermelho da marca.
+   - linha: divisores decorativos; borda: contorno de campos e botões (contraste 3:1). */
+:root {
+  --c-fundo: #121314;
+  --c-superficie: #1c1e20;
+  --c-texto: #f2efe9;
+  --c-suave: #a6a39d;
+  --c-linha: #2c2f32;
+  --c-borda: #6e7175;
+  --c-destaque: #d93a2e;
+  --c-sobre-destaque: #ffffff;
+  --c-marca: #f05a4f;
+  --c-apoio: #f2d25c;
+  --c-apoio-texto: #f2d25c;
+  --c-ok: #4fd1a1;
+  --c-aviso: #f5a04a;
+  --c-erro: #ff7a9c;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --c-fundo: #f6f3ec;
+    --c-superficie: #ffffff;
+    --c-texto: #17181a;
+    --c-suave: #5e5b55;
+    --c-linha: #dad5ca;
+    --c-borda: #8f8b83;
+    --c-destaque: #c62a20;
+    --c-sobre-destaque: #ffffff;
+    --c-marca: #c62a20;
+    --c-apoio: #f2d25c;
+    --c-apoio-texto: #7a5f00;
+    --c-ok: #0f7b55;
+    --c-aviso: #9a5200;
+    --c-erro: #b3205b;
+  }
+}
+
+@theme inline {
+  --color-fundo: var(--c-fundo);
+  --color-superficie: var(--c-superficie);
+  --color-texto: var(--c-texto);
+  --color-suave: var(--c-suave);
+  --color-linha: var(--c-linha);
+  --color-borda: var(--c-borda);
+  --color-destaque: var(--c-destaque);
+  --color-sobre-destaque: var(--c-sobre-destaque);
+  --color-marca: var(--c-marca);
+  --color-apoio: var(--c-apoio);
+  --color-apoio-texto: var(--c-apoio-texto);
+  --color-ok: var(--c-ok);
+  --color-aviso: var(--c-aviso);
+  --color-erro: var(--c-erro);
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 }
 
 html {
   background: var(--color-fundo);
   color: var(--color-texto);
-  color-scheme: dark;
+  color-scheme: dark light;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
@@ -39,6 +88,6 @@ textarea {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-destaque);
+  outline: 2px solid var(--color-marca);
   outline-offset: 2px;
 }

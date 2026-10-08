@@ -5,14 +5,14 @@ import { hojeSaoPaulo } from "@/lib/datas";
 import { calendarioDoMes, diaDaSemana, estatisticasDoMes, sequenciaAtual, treinoDoDia, type StatusDia } from "@/lib/treino";
 import { ROTULOS_MOTIVO, type MOTIVOS } from "@/lib/validacao/treino";
 
-export const metadata = { title: "Calendário de treino · FuelLift" };
+export const metadata = { title: "Calendário de treino · Kalyft" };
 
 const MESES = ["janeiro", "fevereiro", "março", "abril", "maio", "junho", "julho", "agosto", "setembro", "outubro", "novembro", "dezembro"];
 const CLASSE: Record<StatusDia, string> = {
-  feito: "bg-destaque text-fundo font-bold",
-  faltou: "bg-erro text-fundo font-bold",
-  planejado: "border-2 border-destaque",
-  sem_registro: "border-2 border-dashed border-erro",
+  feito: "bg-destaque text-sobre-destaque font-bold",
+  faltou: "bg-aviso text-fundo font-bold",
+  planejado: "border-2 border-marca",
+  sem_registro: "border-2 border-dashed border-aviso",
   livre: "text-suave",
 };
 const LEGENDA: Array<[StatusDia, string]> = [
@@ -55,13 +55,13 @@ export default async function PaginaCalendario(props: PageProps<"/treino/calenda
         ‹ Voltar
       </Link>
       <header className="flex items-center justify-between">
-        <Link href={`/treino/calendario?mes=${mesAdjacente(ano, mes, -1)}`} aria-label="Mês anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+        <Link href={`/treino/calendario?mes=${mesAdjacente(ano, mes, -1)}`} aria-label="Mês anterior" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
           ‹
         </Link>
         <h1 className="text-2xl font-black capitalize">
           {MESES[mes - 1]} {ano}
         </h1>
-        <Link href={`/treino/calendario?mes=${mesAdjacente(ano, mes, 1)}`} aria-label="Próximo mês" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-linha text-xl font-bold">
+        <Link href={`/treino/calendario?mes=${mesAdjacente(ano, mes, 1)}`} aria-label="Próximo mês" className="flex min-h-12 min-w-12 items-center justify-center rounded-full border-2 border-borda text-xl font-bold">
           ›
         </Link>
       </header>

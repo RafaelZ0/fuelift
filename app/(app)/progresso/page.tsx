@@ -9,7 +9,7 @@ import { aplicacaoPendente, diasEntre, massaGorda, NOMES_DIA, tendenciaDoPeso } 
 import { apagarPesagem, desfazerAplicacao, marcarAplicacao, salvarDiaAplicacao } from "./actions";
 import { FormPesagem } from "./form-pesagem";
 
-export const metadata = { title: "Progresso · FuelLift" };
+export const metadata = { title: "Progresso · Kalyft" };
 
 const txt = (n: number | null) => (n === null ? "" : String(n).replace(".", ","));
 
@@ -110,7 +110,7 @@ export default async function PaginaProgresso() {
             <select
               name="dia"
               defaultValue={diaAplic === null ? "" : String(diaAplic)}
-              className="min-h-12 w-full rounded-xl border-2 border-linha bg-superficie px-3 text-lg font-semibold [color-scheme:dark]"
+              className="min-h-12 w-full rounded-xl border-2 border-borda bg-superficie px-3 text-lg font-semibold"
             >
               <option value="">Sem lembrete</option>
               {NOMES_DIA.map((n, i) => (
@@ -120,15 +120,15 @@ export default async function PaginaProgresso() {
               ))}
             </select>
           </label>
-          <button type="submit" className="min-h-12 rounded-full border-2 border-linha px-5 font-semibold">
+          <button type="submit" className="min-h-12 rounded-full border-2 border-borda px-5 font-semibold">
             Salvar
           </button>
         </form>
         {pendente ? (
-          <form action={marcarAplicacao} className="space-y-2 rounded-2xl border-2 border-destaque p-4">
+          <form action={marcarAplicacao} className="space-y-2 rounded-2xl border-2 border-marca p-4">
             <p className="font-semibold">Hoje é o dia da aplicação.</p>
             <input type="hidden" name="data" value={hoje} />
-            <button type="submit" className="min-h-12 w-full rounded-full bg-destaque font-bold text-fundo">
+            <button type="submit" className="min-h-12 w-full rounded-full bg-destaque font-bold text-sobre-destaque">
               Marcar como feita
             </button>
           </form>

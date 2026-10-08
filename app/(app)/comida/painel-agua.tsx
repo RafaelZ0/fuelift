@@ -25,7 +25,7 @@ export function PainelAgua({ data, totalMl, metaMl, editavel }: { data: string; 
           <form action={adicionarAgua} className="grid grid-cols-3 gap-3">
             <input type="hidden" name="data" value={data} />
             {BOTOES_AGUA.map((ml) => (
-              <button key={ml} type="submit" name="ml" value={ml} className="min-h-14 rounded-full border-2 border-linha text-lg font-bold active:border-destaque">
+              <button key={ml} type="submit" name="ml" value={ml} className="min-h-14 rounded-full border-2 border-borda text-lg font-bold active:border-marca">
                 +{ml}
               </button>
             ))}

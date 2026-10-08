@@ -16,7 +16,7 @@ import { dicaDeProgressao, seriesDoExercicio, treinoDoDia } from "@/lib/treino";
 import { dataAteHoje } from "@/lib/validacao/treino";
 import { SessaoCliente, type DicaTela, type ItemTela } from "./sessao-cliente";
 
-export const metadata = { title: "Treinando · FuelLift" };
+export const metadata = { title: "Treinando · Kalyft" };
 
 export default async function PaginaSessao(props: PageProps<"/treino/sessao">) {
   const { userId } = await exigirUsuario();

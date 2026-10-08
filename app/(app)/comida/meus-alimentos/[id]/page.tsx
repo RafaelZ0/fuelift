@@ -7,7 +7,7 @@ import { apagarAlimento } from "../../actions";
 import { Voltar } from "../../comum";
 import { FormAlimento } from "../formulario";
 
-export const metadata = { title: "Editar alimento · FuelLift" };
+export const metadata = { title: "Editar alimento · Kalyft" };
 
 const txt = (v: number | null) => (v === null ? "" : String(v).replace(".", ","));
 
