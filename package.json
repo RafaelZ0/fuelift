@@ -13,7 +13,8 @@
     "db:gerar": "drizzle-kit generate",
     "db:migrar": "drizzle-kit migrate",
     "db:migrar:producao": "node scripts/migrar-producao.mjs",
-    "taco:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-taco.mjs"
+    "taco:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-taco.mjs",
+    "ibge:importar": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/importar-ibge.mjs"
   },
   "dependencies": {
     "@neondatabase/auth": "0.5.0-beta",

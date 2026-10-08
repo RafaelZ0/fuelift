@@ -56,7 +56,12 @@ const decimal = (min: number, max: number, rotulo: string) =>
 /** Quantidade: em gramas, ou N × medida caseira. O servidor converte para gramas. */
 export const quantidadeSchema = z.discriminatedUnion("modo", [
   z.object({ modo: z.literal("gramas"), gramas: decimal(0.1, 5000, "Gramas") }),
-  z.object({ modo: z.literal("medida"), medidaId: id, quantidade: decimal(0.1, 50, "Quantidade") }),
+  z.object({
+    modo: z.literal("medida"),
+    origemMedida: z.enum(["minha", "ibge"], { error: "Medida inválida." }),
+    medidaId: id,
+    quantidade: decimal(0.1, 50, "Quantidade"),
+  }),
 ]);
 
 export const adicionarSchema = z.object({

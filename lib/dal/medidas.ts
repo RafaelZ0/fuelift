@@ -36,6 +36,7 @@ export async function criarMedida(
   alimentoId: string,
   nome: string,
   gramas: number,
+  origem: "usuario" | "ibge" = "usuario",
 ): Promise<"ok" | "duplicada"> {
   exigirId(userId);
   if (!ehUuid(alimentoId)) throw new Error("alimento inválido");
@@ -45,6 +46,7 @@ export async function criarMedida(
       userId,
       nome,
       gramas,
+      origem,
       alimentoBaseId: tipo === "base" ? alimentoId : null,
       alimentoUsuarioId: tipo === "usuario" ? alimentoId : null,
     })

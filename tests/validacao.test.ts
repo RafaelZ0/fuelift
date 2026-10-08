@@ -135,7 +135,7 @@ describe("comida", () => {
 
   it("aceita gramas e medida válidas", () => {
     expect(adicionarSchema.safeParse({ ...base, quantidade: { modo: "gramas", gramas: "150,5" } }).success).toBe(true);
-    expect(adicionarSchema.safeParse({ ...base, quantidade: { modo: "medida", medidaId: UUID, quantidade: "1,5" } }).success).toBe(true);
+    expect(adicionarSchema.safeParse({ ...base, quantidade: { modo: "medida", origemMedida: "minha", medidaId: UUID, quantidade: "1,5" } }).success).toBe(true);
   });
 
   it.each([
@@ -143,7 +143,7 @@ describe("comida", () => {
     ["gramas 5001", { ...base, quantidade: { modo: "gramas", gramas: "5001" } }],
     ["gramas negativas", { ...base, quantidade: { modo: "gramas", gramas: "-5" } }],
     ["gramas com texto", { ...base, quantidade: { modo: "gramas", gramas: "1e3" } }],
-    ["quantidade de medida 51", { ...base, quantidade: { modo: "medida", medidaId: UUID, quantidade: "51" } }],
+    ["quantidade de medida 51", { ...base, quantidade: { modo: "medida", origemMedida: "minha", medidaId: UUID, quantidade: "51" } }],
     ["refeição inválida", { ...base, refeicao: "brunch", quantidade: { modo: "gramas", gramas: "100" } }],
     ["tipo inválido", { ...base, tipo: "outro", quantidade: { modo: "gramas", gramas: "100" } }],
     ["id inválido", { ...base, alimentoId: "1 or 1=1", quantidade: { modo: "gramas", gramas: "100" } }],

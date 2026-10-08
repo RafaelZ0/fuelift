@@ -141,7 +141,7 @@ export const fontesAlimentos = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.fonte, t.edicao] }),
-    check("fontes_alimentos_fonte_check", sql`${t.fonte} in ('taco', 'usda')`),
+    check("fontes_alimentos_fonte_check", sql`${t.fonte} in ('taco', 'usda', 'ibge')`),
   ],
 );
 
@@ -225,6 +225,26 @@ export const alimentosUsuario = pgTable(
   ],
 );
 
+// Medidas referidas do IBGE (POF 2008-2009). Só leitura para o app; usadas como sugestões.
+export const medidasIbge = pgTable(
+  "medidas_ibge",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    codigoPof: text("codigo_pof").notNull(),
+    descricaoPof: text("descricao_pof").notNull(),
+    refAlimento: text("ref_alimento").notNull(), // ex.: "Pão francês"
+    medida: text("medida").notNull(), // ex.: "unidade", "fatia média"
+    gramas: numeric("gramas", n72).notNull(),
+    nomeBusca: text("nome_busca").notNull(),
+  },
+  (t) => [
+    unique("medidas_ibge_chave").on(t.refAlimento, t.medida, t.gramas),
+    index("medidas_ibge_nome_busca_trgm").using("gin", t.nomeBusca.op("gin_trgm_ops")),
+    check("medidas_ibge_gramas_check", sql`${t.gramas} > 0 and ${t.gramas} <= 2000`),
+    check("medidas_ibge_textos_check", sql`char_length(${t.refAlimento}) between 1 and 200 and char_length(${t.medida}) between 1 and 80`),
+  ],
+);
+
 // Medidas caseiras do usuário (ex.: "minha concha" = 140 g), por alimento.
 export const medidas = pgTable(
   "medidas",
@@ -237,6 +257,8 @@ export const medidas = pgTable(
     alimentoUsuarioId: uuid("alimento_usuario_id"),
     nome: text("nome").notNull(),
     gramas: numeric("gramas", n72).notNull(),
+    // "usuario" = criada pelo usuário; "ibge" = sugestão do IBGE fixada pelo usuário.
+    origem: text("origem").notNull().default("usuario"),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
@@ -245,6 +267,7 @@ export const medidas = pgTable(
       foreignColumns: [alimentosUsuario.id, alimentosUsuario.userId],
     }).onDelete("cascade"),
     index("medidas_user").on(t.userId),
+    check("medidas_origem_check", sql`${t.origem} in ('usuario', 'ibge')`),
     uniqueIndex("medidas_base_nome_key")
       .on(t.userId, t.alimentoBaseId, sql`lower(${t.nome})`)
       .where(sql`${t.alimentoBaseId} is not null`),
@@ -379,3 +402,4 @@ export type AlimentoUsuario = typeof alimentosUsuario.$inferSelect;
 export type Medida = typeof medidas.$inferSelect;
 export type RegistroAlimentar = typeof registrosAlimentares.$inferSelect;
 export type RefeicaoSalva = typeof refeicoesSalvas.$inferSelect;
+export type MedidaIbge = typeof medidasIbge.$inferSelect;

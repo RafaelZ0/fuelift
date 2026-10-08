@@ -59,7 +59,7 @@ Duas camadas, ambas exibidas como **estimativas**:
 - Refeições do dia: café da manhã, almoço, lanche, jantar, ceia (fixas na Fase 2).
 - Dá para registrar no dia de hoje e em dias passados; dias futuros ficam bloqueados.
 - Busca de alimentos em português, tolerante a acentos e erros de digitação. Fontes: TACO, produtos de código de barras em cache e alimentos criados pelo usuário. Os usados recentemente aparecem primeiro.
-- Porções em gramas e em medidas caseiras definidas pelo usuário por alimento (ex.: "minha concha = 140 g").
+- Porções em gramas e em medidas caseiras: as do usuário por alimento (ex.: "minha concha = 140 g") e **sugestões do IBGE** (unidade, fatia, colher...) da Tabela de Medidas Referidas (POF 2008-2009), mostradas com o nome de origem para o usuário conferir. Uma sugestão pode ser fixada como medida do usuário.
 - Alimentos criados pelo usuário a partir do rótulo: o usuário digita os valores da porção do rótulo (qualquer quantidade de gramas) e o app converte para 100 g.
 - Favoritos, refeições salvas, receitas (soma dos ingredientes com rendimento em porções) e copiar refeição de outro dia. Copiar **recalcula** os nutrientes na hora, como um registro novo daquele dia (cada dia é independente).
 - Totais do dia: calorias, proteína, carboidrato, gordura e fibra versus a meta vigente naquele dia. Nutriente desconhecido não vira zero: o total avisa que está parcial.
@@ -203,7 +203,8 @@ Busca de alimentos em português: extensão `pg_trgm` (disponível no Neon) com 
   - Valores desconhecidos de energia e macronutrientes são preenchidos com uma fonte oficial complementar (USDA FoodData Central, domínio público), com a fonte registrada por valor e aprovação do usuário. Sem equivalente confiável, o alimento fica visível mas não pode ser adicionado.
 - **Open Food Facts:** consulta sob demanda por código de barras, com cache. Enviar um User-Agent identificando o app, como o projeto pede.
 - **Alimentos do usuário:** cadastro manual a partir de rótulos (valores da porção do rótulo, convertidos para 100 g) ou estimativa da IA confirmada pelo usuário (seção 3.4).
-- **Medidas caseiras oficiais (IBGE, POF 2008-2009, "Tabela de Medidas Referidas"):** existem dois arquivos ZIP no FTP do IBGE; formato interno e licença ainda não verificados. Não importar sem aprovação.
+- **Cadastro assistido pela IA (fase da IA):** ao cadastrar um alimento que não veio do código de barras, a IA sugere as calorias e nutrientes por 100 g e as medidas comuns (unidade, fatia, colher...) com gramas. Tudo marcado como "estimativa da IA"; o usuário confere, ajusta e confirma antes de salvar.
+- **Medidas caseiras oficiais (IBGE, POF 2008-2009, "Tabela de Medidas Referidas"):** arquivo oficial em `dados/ibge/` (SHA-256 conferido). Importadas as 605 medidas canônicas (medida relatada = padrão, sem grama/quilo) para `medidas_ibge`, só leitura. Usadas como sugestões por alimento (mesmo alimento principal, preparo compatível). Os arquivos não trazem licença explícita: usar citando a fonte.
 
 ## 6. Ordem de construção (fases)
 
@@ -221,6 +222,7 @@ Cada fase termina com o app funcionando, publicado no Vercel e testado no iPhone
 
 - **Gemini:** **verificar** se o plano gratuito permite uso comercial (há fontes dizendo que não) e a questão de privacidade. Com outros usuários, migrar para um plano pago ou outro provedor. A abstração da seção 3.4 existe para isso.
 - **Open Food Facts:** licença ODbL, com atribuição e possível obrigação de compartilhar bases derivadas. **Verificar** as regras para uso comercial.
+- **IBGE (medidas referidas):** os arquivos não trazem licença explícita. **Confirmar** com o IBGE antes de uso comercial.
 - **TACO:** os termos permitem reprodução total ou parcial citando a fonte e não mencionam uso comercial. **Verificar** com o NEPA antes de vender.
 - **LGPD:** dados de saúde são dados pessoais sensíveis. Será preciso política de privacidade, consentimento, exclusão de conta e exportação de dados.
 - Aviso permanente de que o app não substitui nutricionista, médico ou educador físico.

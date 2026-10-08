@@ -13,6 +13,7 @@ import {
   type AlimentoResumo,
 } from "@/lib/dal/alimentos";
 import { alternarFavorito, criarMedida, excluirMedida, obterMedida } from "@/lib/dal/medidas";
+import { sugestaoIbgeDoAlimento } from "@/lib/dal/medidas-ibge";
 import {
   criarRefeicaoSalva,
   excluirRefeicaoSalva,
@@ -74,7 +75,7 @@ export async function buscar(termo: string): Promise<{ resultados: AlimentoResum
 
 export async function adicionar(_: Estado, form: FormData): Promise<Estado> {
   const { userId } = await exigirUsuario();
-  const f = formParaObjeto(form, ["data", "refeicao", "tipo", "alimentoId", "modo", "gramas", "medidaId", "quantidade"]);
+  const f = formParaObjeto(form, ["data", "refeicao", "tipo", "alimentoId", "modo", "gramas", "medidaId", "origemMedida", "quantidade"]);
   const r = adicionarSchema.safeParse({
     data: f.data,
     refeicao: f.refeicao,
@@ -82,7 +83,7 @@ export async function adicionar(_: Estado, form: FormData): Promise<Estado> {
     alimentoId: f.alimentoId,
     quantidade:
       f.modo === "medida"
-        ? { modo: "medida", medidaId: f.medidaId, quantidade: f.quantidade }
+        ? { modo: "medida", origemMedida: f.origemMedida, medidaId: f.medidaId, quantidade: f.quantidade }
         : { modo: "gramas", gramas: f.gramas },
   });
   if (!r.success) {
@@ -99,6 +100,12 @@ export async function adicionar(_: Estado, form: FormData): Promise<Estado> {
     let medidaTexto: string | null = null;
     if (quantidade.modo === "gramas") {
       gramas = quantidade.gramas;
+    } else if (quantidade.origemMedida === "ibge") {
+      // Sugestão do IBGE: só vale se estiver entre as sugestões deste alimento; gramas vêm do banco.
+      const sugestao = await sugestaoIbgeDoAlimento(userId, tipo, alimentoId, quantidade.medidaId);
+      if (!sugestao) return { erro: "Medida não encontrada." };
+      gramas = gramasDaMedida(sugestao.gramas, quantidade.quantidade);
+      medidaTexto = `${quantidade.quantidade.toLocaleString("pt-BR")} × ${sugestao.medida} (IBGE)`;
     } else {
       const medida = await obterMedida(userId, quantidade.medidaId);
       const daMedida = tipo === "base" ? medida?.alimentoBaseId : medida?.alimentoUsuarioId;
@@ -194,6 +201,24 @@ export async function salvarMedida(_: Estado, form: FormData): Promise<Estado> {
   }
   revalidatePath("/comida", "layout");
   return { ok: "Medida salva." };
+}
+
+/** Fixa uma sugestão do IBGE como medida do usuário para este alimento. */
+export async function fixarMedidaIbge(form: FormData): Promise<void> {
+  const { userId } = await exigirUsuario();
+  const r = z
+    .object({ tipo: tipoAlimento, alimentoId: idSchema, medidaIbgeId: idSchema })
+    .safeParse(formParaObjeto(form, ["tipo", "alimentoId", "medidaIbgeId"]));
+  if (!r.success) return;
+  try {
+    const sugestao = await sugestaoIbgeDoAlimento(userId, r.data.tipo, r.data.alimentoId, r.data.medidaIbgeId);
+    if (sugestao) {
+      await criarMedida(userId, r.data.tipo, r.data.alimentoId, sugestao.medida.slice(0, 40), sugestao.gramas, "ibge");
+    }
+  } catch (e) {
+    registrarErro("fixarMedidaIbge", e);
+  }
+  revalidatePath("/comida", "layout");
 }
 
 export async function apagarMedida(form: FormData): Promise<void> {

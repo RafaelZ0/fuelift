@@ -74,7 +74,16 @@ npm run db:migrar    # aplica no banco de DATABASE_URL_MIGRACOES (.env.local = d
 
 Para produção, use `npm run db:migrar:producao`, que lê a URL do dono do branch `production` em `.env.main.local` (fora do git). Rode só depois de testar no `dev`. As migrations nunca rodam no build do Vercel.
 
-## 6. Testes
+## 6. Dados oficiais
+
+```
+npm run taco:importar -- --alvo dev|test|producao [--confirmar]   # TACO + complementos
+npm run ibge:importar -- --alvo dev|test|producao [--confirmar]   # medidas referidas do IBGE
+```
+
+Os dois são idempotentes, conferem o SHA-256 do arquivo e gravam tudo numa transação (ou nada). Produção exige `--confirmar` e usa `.env.main.local`.
+
+## 7. Testes
 
 ```
 npm test             # validação e datas (sem banco)

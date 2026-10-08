@@ -29,6 +29,20 @@
       "when": 1791388261056,
       "tag": "0003_fase2_permissoes_fks",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791459697005,
+      "tag": "0004_medidas_ibge",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791459704294,
+      "tag": "0005_medidas_ibge_permissoes",
+      "breakpoints": true
     }
   ]
 }

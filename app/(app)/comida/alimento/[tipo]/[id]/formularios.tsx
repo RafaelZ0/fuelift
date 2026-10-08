@@ -3,36 +3,51 @@
 import { useActionState, useState } from "react";
 import { Aviso, BotaoEnviar, Campo } from "@/components/ui";
 import { calcularNutrientes, formatarGramas, formatarKcal, gramasDaMedida, type Por100g } from "@/lib/nutricao";
-import { adicionar, apagarMedida, salvarMedida, type Estado } from "../../../actions";
+import { adicionar, apagarMedida, fixarMedidaIbge, salvarMedida, type Estado } from "../../../actions";
 
-type MedidaTela = { id: string; nome: string; gramas: number };
+export type MedidaTela = { id: string; nome: string; gramas: number; origem: "usuario" | "ibge" };
+export type SugestaoTela = { id: string; medida: string; gramas: number; refAlimento: string };
+
+/** Opção do seletor: medida do usuário ou sugestão do IBGE. */
+type Opcao = { chave: string; origem: "minha" | "ibge"; id: string; nome: string; gramas: number; ref?: string };
 
 const numero = (s: string) => {
   const n = Number(s.replace(",", "."));
   return Number.isFinite(n) && n > 0 ? n : 0;
 };
 
+function SeloIbge() {
+  return <span className="ml-1 text-xs font-bold text-destaque">IBGE</span>;
+}
+
 export function FormAdicionar({
   alimento,
   medidas,
+  sugestoes,
   data,
   refeicao,
   rotuloRefeicao,
 }: {
   alimento: Por100g & { tipo: string; id: string };
   medidas: MedidaTela[];
+  sugestoes: SugestaoTela[];
   data: string;
   refeicao: string;
   rotuloRefeicao: string;
 }) {
   const [estado, acao] = useActionState<Estado, FormData>(adicionar, {});
-  const [modo, setModo] = useState<"gramas" | "medida">(medidas.length > 0 ? "medida" : "gramas");
+  // Suas medidas primeiro; depois as sugestões do IBGE (com o nome de origem).
+  const opcoes: Opcao[] = [
+    ...medidas.map((m) => ({ chave: `minha:${m.id}`, origem: "minha" as const, id: m.id, nome: m.nome, gramas: m.gramas })),
+    ...sugestoes.map((x) => ({ chave: `ibge:${x.id}`, origem: "ibge" as const, id: x.id, nome: x.medida, gramas: x.gramas, ref: x.refAlimento })),
+  ];
+  const [modo, setModo] = useState<"gramas" | "medida">(opcoes.length > 0 ? "medida" : "gramas");
   const [gramasTxt, setGramasTxt] = useState("100");
   const [qtdTxt, setQtdTxt] = useState("1");
-  const [medidaId, setMedidaId] = useState(medidas[0]?.id ?? "");
+  const [chave, setChave] = useState(opcoes[0]?.chave ?? "");
 
   // Sem escolha válida (ex.: medida recém-criada), usa a primeira da lista.
-  const medida = medidas.find((x) => x.id === medidaId) ?? medidas[0];
+  const medida = opcoes.find((x) => x.chave === chave) ?? opcoes[0];
   // Prévia no navegador; o servidor recalcula ao salvar.
   const gramas = modo === "gramas" ? numero(gramasTxt) : medida ? gramasDaMedida(medida.gramas, numero(qtdTxt)) : 0;
   const previa = gramas > 0 ? calcularNutrientes(alimento, gramas) : null;
@@ -44,8 +59,14 @@ export function FormAdicionar({
       <input type="hidden" name="tipo" value={alimento.tipo} />
       <input type="hidden" name="alimentoId" value={alimento.id} />
       <input type="hidden" name="modo" value={modo} />
+      {medida ? (
+        <>
+          <input type="hidden" name="medidaId" value={medida.id} />
+          <input type="hidden" name="origemMedida" value={medida.origem} />
+        </>
+      ) : null}
 
-      {medidas.length > 0 ? (
+      {opcoes.length > 0 ? (
         <div className="flex gap-2" role="group" aria-label="Como informar a quantidade">
           {(["medida", "gramas"] as const).map((m) => (
             <button
@@ -83,18 +104,21 @@ export function FormAdicionar({
           <fieldset>
             <legend className="mb-2 text-sm font-medium text-suave">Medida</legend>
             <div className="flex flex-wrap gap-2">
-              {medidas.map((x) => (
-                <label key={x.id} className="cursor-pointer">
+              {opcoes.map((x) => (
+                <label key={x.chave} className="cursor-pointer">
                   <input
                     type="radio"
-                    name="medidaId"
-                    value={x.id}
-                    checked={medida?.id === x.id}
-                    onChange={() => setMedidaId(x.id)}
+                    name="opcaoMedida"
+                    value={x.chave}
+                    checked={medida?.chave === x.chave}
+                    onChange={() => setChave(x.chave)}
                     className="peer sr-only"
                   />
-                  <span className="flex min-h-12 items-center rounded-full border-2 border-linha px-4 font-semibold text-suave peer-checked:border-destaque peer-checked:text-texto">
-                    {x.nome} · {formatarGramas(x.gramas)} g
+                  <span className="flex min-h-12 flex-col justify-center rounded-2xl border-2 border-linha px-4 py-1 font-semibold text-suave peer-checked:border-destaque peer-checked:text-texto">
+                    <span>
+                      {x.nome} · {formatarGramas(x.gramas)} g{x.origem === "ibge" ? <SeloIbge /> : null}
+                    </span>
+                    {x.ref ? <span className="text-xs font-normal text-suave">{x.ref}</span> : null}
                   </span>
                 </label>
               ))}
@@ -142,8 +166,22 @@ export function FormAdicionar({
   );
 }
 
-export function Medidas({ tipo, alimentoId, medidas }: { tipo: string; alimentoId: string; medidas: MedidaTela[] }) {
+export function Medidas({
+  tipo,
+  alimentoId,
+  medidas,
+  sugestoes,
+}: {
+  tipo: string;
+  alimentoId: string;
+  medidas: MedidaTela[];
+  sugestoes: SugestaoTela[];
+}) {
   const [estado, acao] = useActionState<Estado, FormData>(salvarMedida, {});
+  // Sugestões já fixadas (mesmo nome e gramas) não aparecem de novo.
+  const fixadas = new Set(medidas.map((m) => `${m.nome.toLowerCase()}|${m.gramas}`));
+  const livres = sugestoes.filter((x) => !fixadas.has(`${x.medida.slice(0, 40).toLowerCase()}|${x.gramas}`));
+
   return (
     <section aria-labelledby="medidas" className="space-y-3">
       <h2 id="medidas" className="text-xl font-bold">Minhas medidas</h2>
@@ -153,6 +191,7 @@ export function Medidas({ tipo, alimentoId, medidas }: { tipo: string; alimentoI
           <li key={x.id} className="flex min-h-12 items-center justify-between border-b border-linha">
             <span>
               {x.nome} · <span className="text-suave">{formatarGramas(x.gramas)} g</span>
+              {x.origem === "ibge" ? <SeloIbge /> : null}
             </span>
             <form action={apagarMedida}>
               <input type="hidden" name="medidaId" value={x.id} />
@@ -163,6 +202,34 @@ export function Medidas({ tipo, alimentoId, medidas }: { tipo: string; alimentoI
           </li>
         ))}
       </ul>
+
+      {livres.length > 0 ? (
+        <div className="space-y-1 pt-2">
+          <h3 className="font-bold">Sugestões do IBGE</h3>
+          <p className="text-sm text-suave">Medidas oficiais de alimentos parecidos. Confira o nome de origem antes de usar.</p>
+          <ul>
+            {livres.map((x) => (
+              <li key={x.id} className="flex min-h-14 items-center justify-between gap-3 border-b border-linha py-2">
+                <span>
+                  <span className="block">
+                    {x.medida} · <span className="text-suave">{formatarGramas(x.gramas)} g</span>
+                  </span>
+                  <span className="text-xs text-suave">IBGE: {x.refAlimento}</span>
+                </span>
+                <form action={fixarMedidaIbge}>
+                  <input type="hidden" name="tipo" value={tipo} />
+                  <input type="hidden" name="alimentoId" value={alimentoId} />
+                  <input type="hidden" name="medidaIbgeId" value={x.id} />
+                  <button type="submit" className="min-h-11 shrink-0 rounded-full border-2 border-linha px-3 text-sm font-semibold">
+                    Fixar
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <form action={acao} className="space-y-4" noValidate>
         <input type="hidden" name="tipo" value={tipo} />
         <input type="hidden" name="alimentoId" value={alimentoId} />

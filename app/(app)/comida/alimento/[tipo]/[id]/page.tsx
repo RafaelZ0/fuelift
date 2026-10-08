@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { exigirUsuario } from "@/lib/auth/sessao";
 import { citacaoTaco, obterAlimento } from "@/lib/dal/alimentos";
 import { ehFavorito, listarMedidas } from "@/lib/dal/medidas";
+import { sugestoesIbge } from "@/lib/dal/medidas-ibge";
 import { hojeSaoPaulo } from "@/lib/datas";
 import type { Marcacoes } from "@/lib/db/schema";
 import { formatarGramas, formatarKcal } from "@/lib/nutricao";
@@ -52,11 +53,20 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
 
   const alimento = await obterAlimento(userId, tipo.data, id.data);
   if (!alimento) notFound();
-  const [medidas, favorito, citacao] = await Promise.all([
+  const [medidasDb, favorito, citacao, sugestoesDb] = await Promise.all([
     listarMedidas(userId, tipo.data, id.data),
     ehFavorito(userId, tipo.data, id.data),
     tipo.data === "base" ? citacaoTaco() : Promise.resolve(null),
+    sugestoesIbge(alimento.nome),
   ]);
+  // Só os campos necessários vão para o navegador.
+  const medidas = medidasDb.map((x) => ({
+    id: x.id,
+    nome: x.nome,
+    gramas: x.gramas,
+    origem: x.origem === "ibge" ? ("ibge" as const) : ("usuario" as const),
+  }));
+  const sugestoes = sugestoesDb.map((x) => ({ id: x.id, medida: x.medida, gramas: x.gramas, refAlimento: x.refAlimento }));
   const m = alimento.marcacoes;
 
   return (
@@ -106,7 +116,8 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
             gorduraG: alimento.gorduraG,
             fibraG: alimento.fibraG,
           }}
-          medidas={medidas.map((x) => ({ id: x.id, nome: x.nome, gramas: x.gramas }))}
+          medidas={medidas}
+          sugestoes={sugestoes}
           data={data}
           refeicao={ref}
           rotuloRefeicao={comArtigo(ref, "a")}
@@ -132,7 +143,12 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
         </dl>
       </section>
 
-      <Medidas tipo={alimento.tipo} alimentoId={alimento.id} medidas={medidas.map((x) => ({ id: x.id, nome: x.nome, gramas: x.gramas }))} />
+      <Medidas tipo={alimento.tipo} alimentoId={alimento.id} medidas={medidas} sugestoes={sugestoes} />
+      {sugestoes.length > 0 ? (
+        <p className="text-xs text-suave">
+          Medidas sugeridas: IBGE, Pesquisa de Orçamentos Familiares 2008-2009, Tabela de Medidas Referidas para os Alimentos Consumidos no Brasil.
+        </p>
+      ) : null}
 
       <CitacaoTaco citacao={citacao} />
     </div>
