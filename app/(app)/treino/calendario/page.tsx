@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { exigirUsuario } from "@/lib/auth/sessao";
-import { listarSessoes, obterAgenda, obterTrocas, ultimasSessoes } from "@/lib/dal/treino";
+import { listarSessoes, obterAgenda, obterTrocas, planoAtivo, ultimasSessoes } from "@/lib/dal/treino";
 import { hojeSaoPaulo } from "@/lib/datas";
 import { calendarioDoMes, diaDaSemana, estatisticasDoMes, sequenciaAtual, treinoDoDia, type StatusDia } from "@/lib/treino";
 import { ROTULOS_MOTIVO, type MOTIVOS } from "@/lib/validacao/treino";
@@ -36,14 +36,15 @@ export default async function PaginaCalendario(props: PageProps<"/treino/calenda
   const primeiro = `${ano}-${String(mes).padStart(2, "0")}-01`;
   const ultimo = `${ano}-${String(mes).padStart(2, "0")}-${String(new Date(Date.UTC(ano, mes, 0)).getUTCDate()).padStart(2, "0")}`;
 
-  const [sessoes, agenda, trocas, recentes] = await Promise.all([
+  const [plano, sessoes, agenda, trocas, recentes] = await Promise.all([
+    planoAtivo(userId),
     listarSessoes(userId, primeiro, ultimo),
     obterAgenda(userId),
     obterTrocas(userId, primeiro, ultimo),
     ultimasSessoes(userId),
   ]);
   const resumo = (l: typeof sessoes) => l.map((s) => ({ data: s.data, status: s.status as "feito" | "faltou", motivo: s.motivo }));
-  const dias = calendarioDoMes(ano, mes, hoje, resumo(sessoes), (d) => treinoDoDia(d, agenda, trocas) !== null);
+  const dias = calendarioDoMes(ano, mes, hoje, resumo(sessoes), (d) => (!plano || d >= plano.inicio) && treinoDoDia(d, agenda, trocas) !== null);
   const est = estatisticasDoMes(resumo(sessoes), ano, mes);
   const seq = sequenciaAtual(resumo(recentes));
   const vazios = diaDaSemana(primeiro);
