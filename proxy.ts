@@ -45,10 +45,10 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 export const config = {
   matcher: [
     {
-      // Fora do proxy: arquivos estáticos e os arquivos que o iPhone busca
-      // para instalar o app (manifest e ícones), que não têm dados.
+      // Fora do proxy: arquivos estáticos, os arquivos que o iPhone busca para instalar o app
+      // (manifest e ícones) e /api/passos, que se autentica por token pessoal (não por cookie).
       source:
-        "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon|apple-icon|robots.txt).*)",
+        "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|icon|apple-icon|robots.txt|api/passos).*)",
       missing: [
         { type: "header", key: "next-router-prefetch" },
         { type: "header", key: "purpose", value: "prefetch" },

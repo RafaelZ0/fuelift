@@ -17,6 +17,8 @@ export const LIMITES = {
   novaSenhaPorEmail: { maximo: 5, janela: 15 * MINUTO },
   buscaPorUsuario: { maximo: 120, janela: MINUTO },
   barrasPorUsuario: { maximo: 30, janela: MINUTO },
+  passosPorToken: { maximo: 60, janela: 60 * MINUTO },
+  passosPorIp: { maximo: 120, janela: 60 * MINUTO },
 } as const;
 
 export async function ipDaRequisicao(): Promise<string> {

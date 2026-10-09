@@ -78,6 +78,13 @@
       "when": 1791576515306,
       "tag": "0010_fase5_uso_ia_refeicao",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791580961577,
+      "tag": "0011_fase6_gasto_passos",
+      "breakpoints": true
     }
   ]
 }

@@ -35,11 +35,14 @@ export const perfis = pgTable(
     // Aceite do aviso de uso da IA (versão do texto e quando foi aceito).
     iaAceiteVersao: integer("ia_aceite_versao"),
     iaAceiteEm: timestamp("ia_aceite_em", { withTimezone: true }),
+    // Fase 6: ritmo máximo de perda (% do peso por semana). Só pode ser MENOR que o teto de 1%.
+    ritmoMaxPct: numeric("ritmo_max_pct", { precision: 3, scale: 2, mode: "number" }).notNull().default(1),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
     atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
     check("perfis_dia_aplicacao_check", sql`${t.diaAplicacao} between 0 and 6`),
+    check("perfis_ritmo_max_pct_check", sql`${t.ritmoMaxPct} between 0.25 and 1.00`),
     check("perfis_nome_check", sql`char_length(${t.nome}) <= 80`),
     check("perfis_data_nascimento_check", sql`${t.dataNascimento} >= date '1900-01-01'`),
     check("perfis_sexo_check", sql`${t.sexo} in ('masculino', 'feminino')`),
@@ -712,7 +715,7 @@ export const usoIa = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.data, t.tipo] }),
-    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa')`),
+    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa', 'atividade', 'metas')`),
     check("uso_ia_chamadas_check", sql`${t.chamadas} between 0 and 10000`),
   ],
 );
@@ -758,3 +761,89 @@ export const produtosBarras = pgTable(
 );
 
 export type ProdutoBarras = typeof produtosBarras.$inferSelect;
+
+// ───────────────────────── Fase 6: gasto, projeção, passos ─────────────────────────
+
+// Histórico do gasto calórico estimado (um por dia em que foi calculado). Sempre uma ESTIMATIVA.
+export const gastoEstimado = pgTable(
+  "gasto_estimado",
+  {
+    userId: dono(),
+    data: date("data").notNull(),
+    metodo: text("metodo").notNull(),
+    valor: integer("valor").notNull(),
+    minimo: integer("minimo").notNull(),
+    maximo: integer("maximo").notNull(),
+    diasUsados: integer("dias_usados"),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.data] }),
+    check("gasto_estimado_metodo_check", sql`${t.metodo} in ('adaptativo', 'katch_mcardle', 'mifflin_st_jeor')`),
+    check("gasto_estimado_valor_check", sql`${t.valor} between 500 and 8000 and ${t.minimo} between 500 and 8000 and ${t.maximo} between 500 and 8000 and ${t.minimo} <= ${t.maximo}`),
+    check("gasto_estimado_dias_check", sql`${t.diasUsados} between 0 and 400`),
+  ],
+);
+
+// Versões da projeção de peso (para comparar plano × real ao longo das semanas).
+export const projecoesPeso = pgTable(
+  "projecoes_peso",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    criadaEm: timestamp("criada_em", { withTimezone: true }).notNull().defaultNow(),
+    pesoInicialKg: numeric("peso_inicial_kg", { precision: 5, scale: 1, mode: "number" }).notNull(),
+    pesoMetaKg: numeric("peso_meta_kg", { precision: 5, scale: 1, mode: "number" }).notNull(),
+    consumoKcal: integer("consumo_kcal").notNull(),
+    gastoKcal: integer("gasto_kcal").notNull(),
+    semanasParaMeta: integer("semanas_para_meta"),
+    pontos: jsonb("pontos").$type<Array<{ semana: number; peso: number }>>().notNull(),
+  },
+  (t) => [
+    index("projecoes_peso_user").on(t.userId, t.criadaEm.desc()),
+    check("projecoes_peso_pesos_check", sql`${t.pesoInicialKg} between 20 and 400 and ${t.pesoMetaKg} between 20 and 400`),
+    check("projecoes_peso_kcal_check", sql`${t.consumoKcal} between 500 and 10000 and ${t.gastoKcal} between 500 and 8000`),
+    check("projecoes_peso_semanas_check", sql`${t.semanasParaMeta} between 0 and 104`),
+  ],
+);
+
+// Passos do dia, enviados pelo Atalhos do iPhone (um valor por dia; o último envio vale).
+export const passosDia = pgTable(
+  "passos_dia",
+  {
+    userId: dono(),
+    data: date("data").notNull(),
+    passos: integer("passos").notNull(),
+    origem: text("origem").notNull().default("atalhos"),
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.data] }),
+    check("passos_dia_passos_check", sql`${t.passos} between 0 and 200000`),
+    check("passos_dia_origem_check", sql`${t.origem} in ('atalhos', 'manual')`),
+  ],
+);
+
+// Tokens pessoais da API de passos. O token em si NUNCA é guardado: só o hash SHA-256.
+export const tokensApi = pgTable(
+  "tokens_api",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    nome: text("nome").notNull(),
+    hash: text("hash").notNull(),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+    ultimoUso: timestamp("ultimo_uso", { withTimezone: true }),
+    revogadoEm: timestamp("revogado_em", { withTimezone: true }),
+  },
+  (t) => [
+    unique("tokens_api_hash_key").on(t.hash),
+    index("tokens_api_user").on(t.userId),
+    check("tokens_api_nome_check", sql`char_length(${t.nome}) between 1 and 40`),
+    check("tokens_api_hash_check", sql`${t.hash} ~ '^[0-9a-f]{64}$'`),
+  ],
+);
+
+export type GastoEstimado = typeof gastoEstimado.$inferSelect;
+export type ProjecaoPeso = typeof projecoesPeso.$inferSelect;
+export type PassosDia = typeof passosDia.$inferSelect;
+export type TokenApi = typeof tokensApi.$inferSelect;
