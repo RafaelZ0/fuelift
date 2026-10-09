@@ -129,9 +129,10 @@ export function PainelMetas({ meta, historico }: { meta: MetaTela | null; histor
     <section aria-labelledby="metas">
       <Cabecalho titulo="Metas" editando={p.editando} onEditar={p.editar} />
       <p className="mb-2 text-sm text-suave">
-        Use as metas combinadas com seu nutricionista. O app não calcula metas por você.
+        Use as metas combinadas com seu nutricionista, ou veja as sugestões do app (estimativas) em Meta e plano. Nenhuma meta muda sem você confirmar.
       </p>
       {p.salvo ? <Aviso tipo="ok">Metas salvas a partir de hoje.</Aviso> : null}
+      {p.salvo && p.estado.aviso ? <p role="alert" className="mt-2 rounded-2xl border-2 border-aviso p-3 font-medium text-aviso"><span aria-hidden="true">! </span>{p.estado.aviso}</p> : null}
       {!p.editando ? (
         <>
           <dl>

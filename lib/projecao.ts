@@ -150,6 +150,16 @@ export function planejarMeta(e: EntradaPlano): Planejamento {
         const kgSem = (d.pct / 100) * e.pesoAtual;
         return opcao(d.id, d.rotulo, d.pct, e, kgSem);
       });
+  // Quando o gasto está perto da taxa basal, várias opções caem na mesma meta (travadas na TMB): mostra só uma.
+  const unicas = opcoes.filter((o, i) => opcoes.findIndex((x) => x.kcal === o.kcal) === i);
+  if (unicas.length < opcoes.length) {
+    avisos.push({
+      nivel: "atencao",
+      texto: "O seu gasto estimado está perto da sua taxa metabólica basal, então só há margem segura para um déficit pequeno. Mais atividade ou revisar o registro de comida podem abrir espaço; converse com o nutricionista antes de comer menos que isso.",
+    });
+  }
+  opcoes.length = 0;
+  opcoes.push(...unicas);
   // A "moderada" costuma ser a mais sustentável; se o teto do usuário for menor, a maior que couber.
   const alvo = opcoes.find((o) => o.id === "moderado") ?? opcoes.at(-1);
   if (alvo) alvo.recomendada = true;

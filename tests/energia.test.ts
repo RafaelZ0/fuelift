@@ -183,6 +183,14 @@ describe("meta sugerida e travas de segurança", () => {
     expect(p.opcoes).toEqual([]);
     expect(p.avisos.some((a) => a.nivel === "bloqueio")).toBe(true);
   });
+  it("gasto perto da TMB: não repete opções iguais e explica", () => {
+    const p = planejarMeta({ ...base, gasto: 1950, tmb: 1850 });
+    const kcals = p.opcoes.map((o) => o.kcal);
+    expect(new Set(kcals).size).toBe(kcals.length);
+    expect(p.opcoes.length).toBeLessThan(3);
+    expect(p.opcoes.filter((o) => o.recomendada)).toHaveLength(1);
+    expect(p.avisos.some((a) => /perto da sua taxa metabólica basal/.test(a.texto))).toBe(true);
+  });
   it("manter e ganhar", () => {
     const manter = planejarMeta({ ...base, pesoMeta: 90 });
     expect(manter.tipo).toBe("manter");

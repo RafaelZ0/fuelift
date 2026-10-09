@@ -54,6 +54,8 @@ Duas camadas, ambas exibidas como **estimativas**:
    - Recalcular semanalmente e mostrar a faixa de incerteza, não um número exato.
 - **Não somar calorias do treino à meta por padrão.** O gasto adaptativo já incorpora a atividade real, e as estimativas de calorias por exercício são imprecisas.
 
+**Implementado (Fase 6):** `lib/energia.ts` e `lib/projecao.ts` (funções puras, com testes). Fórmula (Katch-McArdle com massa magra plausível, senão Mifflin-St Jeor) vezes o fator de atividade (1,2; 1,375; 1,55; 1,725; 1,9). Adaptativo com janela de 28 dias: exige registro de comida em 14 dias (dia completo = pelo menos 800 kcal), 6 pesagens cobrindo 10 dias, usa a tendência (EMA) e **recusa** resultado fora de 0,6 a 1,6 vezes a fórmula (registro incompleto). Sempre com faixa de incerteza (±0,5 kg na tendência e ±10% no registro de comida; ±10% na fórmula). O nível de atividade pode ser definido em conversa com a IA (ela só **escolhe** um dos 5 níveis, na dúvida o menor, e o usuário confirma). Passos não entram como calorias.
+
 ### 3.3 Diário alimentar
 
 - Refeições do dia: café da manhã, almoço, lanche, jantar, ceia (fixas na Fase 2).
@@ -133,6 +135,8 @@ O plano tem:
 - Automação no app Atalhos do iPhone que lê os passos do dia e envia ao endpoint. **Verificar** e documentar o passo a passo testado no aparelho.
 - Passos aparecem no painel e ajudam a interpretar o gasto adaptativo (não entram como calorias somadas).
 
+**Implementado (Fase 6):** `POST /api/passos` com token pessoal (`Authorization: Bearer kly_...`, 256 bits, só o hash no banco, até 5 chaves ativas, revogáveis), limite por IP e por chave, corpo até 1 KB em JSON, passos de 0 a 200.000, data de hoje até 7 dias atrás. O passo a passo do Atalhos está em `/ajustes/passos` e **ainda precisa ser conferido no aparelho**.
+
 ### 3.10 Painel "Hoje"
 
 Primeira tela do app: calorias consumidas × meta, proteína, água, treino do dia (com acesso direto), peso de hoje e gasto estimado.
@@ -152,6 +156,8 @@ Primeira tela do app: calorias consumidas × meta, proteína, água, treino do d
 - **Com data desejada:** calcular o déficit diário necessário. Se o ritmo exigido passar de cerca de 1% do peso corporal por semana (referência geral comum, configurável), mostrar um aviso para conversar com o nutricionista. O app não muda a meta sozinho.
 - **Plano × real:** recalcular toda semana com o gasto adaptativo e a tendência real do peso. Mostrar se está adiantado, no ritmo ou atrasado em relação à projeção original, e guardar cada versão da projeção.
 - Proteção da massa magra: mostrar a média de proteína da semana versus a meta e a evolução da massa magra nas avaliações.
+
+**Implementado (Fase 6):** `/progresso/meta` calcula opções **leve (0,25%), moderada (0,5%, recomendada) e firme (0,75%)** do peso por semana, limitadas pelo ritmo máximo do usuário (teto fixo de 1%, configurável só para menos), **nunca abaixo da taxa metabólica basal** e com bloqueio quando a meta deixa o IMC abaixo de 18,5. Opções que caem na mesma meta (gasto perto da TMB) são unificadas com aviso. Proteína 1,8 g/kg (2,0 em déficit, teto 2,2 g/kg e 35% das calorias), gordura o maior entre 0,7 g/kg e 25% das calorias, carboidrato o restante (mínimo 50 g). A IA só **explica** (os números são os do app: se o texto trouxer um número que o app não forneceu, é descartado e vale a explicação fixa). A meta só grava depois do clique, com os números **recalculados no servidor**. Meta digitada à mão fica como foi digitada, com aviso quando passa das travas. Projeção semana a semana recalculando o gasto pelo peso (≈ 10 kcal por kg vezes o fator), com peso de equilíbrio quando não chega à meta, versões guardadas e comparação plano × real (±0,5 kg).
 
 ### 3.13 Gráficos
 

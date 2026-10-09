@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { EmBreve } from "@/components/em-breve";
 import { GraficoLinhas } from "@/components/graficos";
 import { exigirUsuario } from "@/lib/auth/sessao";
@@ -7,15 +8,18 @@ import { formatarDataBr, hojeSaoPaulo, somarDias } from "@/lib/datas";
 import { formatarGramas } from "@/lib/nutricao";
 import { aplicacaoPendente, diasEntre, massaGorda, NOMES_DIA, tendenciaDoPeso } from "@/lib/treino";
 import { apagarPesagem, desfazerAplicacao, marcarAplicacao, salvarDiaAplicacao } from "./actions";
+import { periodoValido } from "@/lib/painel-energia";
 import { FormPesagem } from "./form-pesagem";
+import { GraficosProgresso } from "./graficos-progresso";
 
 export const metadata = { title: "Progresso · Kalyft" };
 
 const txt = (n: number | null) => (n === null ? "" : String(n).replace(".", ","));
 
-export default async function PaginaProgresso() {
+export default async function PaginaProgresso(props: PageProps<"/progresso">) {
   const { userId } = await exigirUsuario();
   const hoje = hojeSaoPaulo();
+  const periodo = periodoValido((await props.searchParams).periodo);
   const [lista, meta, diaAplic, aplicacoes] = await Promise.all([
     listarPesagens(userId, somarDias(hoje, -120), 400),
     metaVigente(userId, hoje),
@@ -36,6 +40,11 @@ export default async function PaginaProgresso() {
   return (
     <div className="space-y-14">
       <EmBreve titulo="Progresso" texto="Seu corpo ao longo do tempo." />
+
+      <Link href="/progresso/meta" className="block rounded-2xl border-2 border-marca p-4 active:bg-superficie">
+        <span className="block text-lg font-bold">Meta e plano</span>
+        <span className="block text-sm text-suave">Seu gasto estimado, quanto comer por dia e a projeção do peso</span>
+      </Link>
 
       <section aria-labelledby="peso" className="space-y-5">
         <h2 id="peso" className="text-2xl font-bold">Peso</h2>
@@ -100,6 +109,8 @@ export default async function PaginaProgresso() {
           </details>
         ) : null}
       </section>
+
+      <GraficosProgresso userId={userId} hoje={hoje} periodo={periodo} />
 
       <section aria-labelledby="aplicacao" className="space-y-4">
         <h2 id="aplicacao" className="text-2xl font-bold">Aplicação semanal</h2>

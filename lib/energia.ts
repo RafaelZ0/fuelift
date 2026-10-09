@@ -70,7 +70,7 @@ export const ADAPTATIVO = {
   kcalMinimaDoDia: 800,
 } as const;
 
-export type DiaConsumo = { data: string; kcal: number | null };
+export type DiaConsumo = { data: string; kcal: number | null; proteinaG?: number | null };
 export type PesagemDia = { data: string; peso: number };
 
 export type GastoAdaptativo = {

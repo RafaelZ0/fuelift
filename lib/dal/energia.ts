@@ -16,12 +16,12 @@ import { exigirId } from "./util";
 export async function consumoPorDia(userId: string, de: string, ate: string): Promise<DiaConsumo[]> {
   exigirId(userId);
   const linhas = await db
-    .select({ data: registrosAlimentares.data, kcal: sql<string>`sum(${registrosAlimentares.kcal})` })
+    .select({ data: registrosAlimentares.data, kcal: sql<string>`sum(${registrosAlimentares.kcal})`, proteinaG: sql<string | null>`sum(${registrosAlimentares.proteinaG})` })
     .from(registrosAlimentares)
     .where(and(eq(registrosAlimentares.userId, userId), between(registrosAlimentares.data, de, ate)))
     .groupBy(registrosAlimentares.data)
     .orderBy(registrosAlimentares.data);
-  return linhas.map((l) => ({ data: l.data, kcal: l.kcal === null ? null : Number(l.kcal) }));
+  return linhas.map((l) => ({ data: l.data, kcal: l.kcal === null ? null : Number(l.kcal), proteinaG: l.proteinaG === null ? null : Number(l.proteinaG) }));
 }
 
 export type DadosEnergia = {

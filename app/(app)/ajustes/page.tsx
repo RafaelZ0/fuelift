@@ -4,6 +4,7 @@ import { historicoMetas, metaVigente } from "@/lib/dal/metas";
 import { obterPerfil } from "@/lib/dal/perfil";
 import { formatarDataBr, hojeSaoPaulo } from "@/lib/datas";
 import type { Meta } from "@/lib/db/schema";
+import Link from "next/link";
 import { sair } from "../../acoes";
 import { decidirCadastro } from "./actions";
 import { PainelMetas, PainelPerfil, type MetaTela } from "./paineis";
@@ -50,6 +51,20 @@ export default async function PaginaAjustes() {
       />
 
       <PainelMetas meta={meta ? paraTela(meta) : null} historico={historico.map(paraTela)} />
+
+      <section aria-labelledby="atalhos" className="space-y-3">
+        <h2 id="atalhos" className="text-2xl font-bold">Gasto, meta e passos</h2>
+        {[
+          ["/progresso/meta", "Meta e plano", "Gasto estimado, opções de calorias e projeção do peso"],
+          ["/ajustes/atividade", "Nível de atividade", "Conte sua rotina e a IA sugere o nível"],
+          ["/ajustes/passos", "Passos do iPhone", "Chave e automação do app Atalhos"],
+        ].map(([href, titulo, texto]) => (
+          <Link key={href} href={href} className="block rounded-2xl border-2 border-linha p-4 active:border-marca">
+            <span className="block text-lg font-bold">{titulo}</span>
+            <span className="block text-sm text-suave">{texto}</span>
+          </Link>
+        ))}
+      </section>
 
       {admin ? (
         <section aria-labelledby="cadastros">
