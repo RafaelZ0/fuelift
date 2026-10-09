@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useRef } from "react";
 import { Aviso, BotaoEnviar, Campo } from "@/components/ui";
 import { salvarAlimento, type Estado } from "../actions";
+import { LerRotulo } from "./ler-rotulo";
 
 export type ValoresAlimento = {
   nome: string;
@@ -22,20 +23,27 @@ export function FormAlimento({
   valores,
   data,
   refeicao,
+  codigo,
 }: {
   alimentoId?: string;
   valores?: ValoresAlimento;
   data?: string;
   refeicao?: string;
+  /** Código de barras lido pelo leitor (o alimento fica ligado a ele). */
+  codigo?: string;
 }) {
   const [estado, acao] = useActionState<Estado, FormData>(salvarAlimento, {});
   const e = estado.erros ?? {};
   const v = valores;
+  const formRef = useRef<HTMLFormElement>(null);
   return (
-    <form action={acao} className="space-y-8" noValidate>
+    <div className="space-y-8">
+    {alimentoId ? null : <LerRotulo formRef={formRef} />}
+    <form ref={formRef} action={acao} className="space-y-8" noValidate>
       {alimentoId ? <input type="hidden" name="alimentoId" value={alimentoId} /> : null}
       {data ? <input type="hidden" name="data" value={data} /> : null}
       {refeicao ? <input type="hidden" name="refeicao" value={refeicao} /> : null}
+      {codigo ? <input type="hidden" name="codigo" value={codigo} /> : null}
       <Campo nome="nome" rotulo="Nome" maxLength={120} valor={v?.nome} erro={e.nome} />
       <Campo nome="marca" rotulo="Marca (opcional)" maxLength={80} valor={v?.marca} erro={e.marca} />
       <Campo
@@ -57,8 +65,15 @@ export function FormAlimento({
       </div>
       <Campo nome="sodioMg" rotulo="Sódio (opcional)" teclado="decimal" sufixo="mg" maxLength={8} valor={v?.sodioMg} erro={e.sodioMg} />
       {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
+      {estado.divergencia ? (
+        <label className="flex min-h-12 items-start gap-3">
+          <input type="checkbox" name="confirmarDivergencia" className="mt-1 size-6 shrink-0 accent-[var(--color-destaque)]" />
+          <span className="text-lg">Conferi com a embalagem: os valores estão iguais ao rótulo.</span>
+        </label>
+      ) : null}
       {estado.ok ? <Aviso tipo="ok">{estado.ok}</Aviso> : null}
       <BotaoEnviar>{alimentoId ? "Salvar alterações" : "Cadastrar alimento"}</BotaoEnviar>
     </form>
+    </div>
   );
 }

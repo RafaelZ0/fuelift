@@ -87,10 +87,13 @@ Detalhes:
 
 ### 3.5 Código de barras
 
-- Leitura pela câmera do iPhone no navegador. **Verificar** qual biblioteca funciona de forma confiável no Safari do iOS e testar no aparelho.
-- Consulta ao Open Food Facts pelo código. Guardar o resultado em cache no banco.
-- Produto não encontrado ou incompleto: formulário para cadastrar a partir do rótulo (por porção ou por 100 g).
-- Atribuir o Open Food Facts na interface, conforme a licença ODbL.
+- Leitura pela câmera do iPhone no navegador, com `@zxing/browser` (JavaScript puro, sem WebAssembly). **A confirmar no aparelho:** não foi possível testar o Safari do iOS fora do iPhone. Há sempre a opção de digitar os números.
+- O código é validado (EAN-8, UPC-A, EAN-13, dígito verificador) e a consulta ao Open Food Facts é feita só pelo servidor, com `User-Agent` do app e limite por usuário.
+- Cache **compartilhado** só com dados do Open Food Facts (`produtos_barras`; guarda também "não encontrado"; vale 30 dias, ou 1 dia se não encontrado). Não guarda quem consultou. A cópia usada no diário é um alimento **privado** do usuário (`alimentos_usuario`, origem `codigo_barras`), editável.
+- Produto incompleto, sem calorias ou com números que não fecham (calorias ≠ 4×proteína + 4×carboidrato + 9×gordura, com tolerância) não é adicionado sozinho: abre o cadastro pelo rótulo, pré-preenchido, para conferir.
+- Cadastro pelo rótulo: a conta calorias × macros precisa fechar ou o usuário confirma que conferiu com a embalagem. Opcional: foto da tabela nutricional lida pela IA (Gemini) e comparada com o digitado; a IA nunca grava, só preenche o formulário.
+- Atribuição ao Open Food Facts (licença ODbL) na tela de leitura, no cadastro e no alimento.
+- Fora do escopo desta fase: base compartilhada entre usuários (comunidade). Se for feita, precisa de moderação, confirmação por outras pessoas e rótulo "dado da comunidade".
 
 ### 3.6 Água
 

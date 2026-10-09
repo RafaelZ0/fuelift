@@ -37,6 +37,8 @@ export type NovoRegistro = {
   gramas: number;
   medidaTexto: string | null;
   nutrientes: Nutrientes;
+  /** De onde veio o registro (padrão: manual). */
+  origem?: "manual" | "codigo_barras";
 };
 
 /** Grava registros com os nutrientes já calculados (snapshot). Para alimento do usuário, o banco confere o dono. */
@@ -55,6 +57,7 @@ export async function criarRegistros(userId: string, novos: ReadonlyArray<NovoRe
         nome: n.nome.slice(0, 160),
         gramas: n.gramas,
         medidaTexto: n.medidaTexto?.slice(0, 60) ?? null,
+        origem: n.origem ?? "manual",
         ...n.nutrientes,
       })),
     )

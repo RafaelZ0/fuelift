@@ -63,10 +63,12 @@ REVOKE CREATE ON SCHEMA public FROM PUBLIC;
 | `GEMINI_MODEL` | opcional | — | opcional | — |
 | `IA_PLANO` | `gratuito` | — | `gratuito` | — |
 | `IA_SOMENTE_ADMIN` | opcional | — | opcional | — |
+| `OFF_USER_AGENT` | opcional | — | opcional | — |
 
 - `LIMITES_HMAC_KEY` é a chave do HMAC-SHA256 que esconde e-mail e IP na tabela `limites`. Sem ela (ou com menos de 32 caracteres), login, cadastro e recuperação de senha ficam bloqueados.
 - Gere cada segredo com `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`. Use um segredo diferente em cada ambiente.
 - `GEMINI_API_KEY` é criada em aistudio.google.com/apikey e fica só no servidor. Sem ela, a tela `/treino/ia` avisa que a IA não está ativada. `IA_SOMENTE_ADMIN=true` libera a IA só para o administrador. Modelos antigos (como `gemini-2.5-flash`) deixam de aceitar novos usuários; o padrão é `gemini-3.5-flash`.
+- `OFF_USER_AGENT` identifica o app nas consultas ao Open Food Facts (padrão: `Kalyft/0.1 (+https://kalyft.vercel.app)`).
 - Nenhuma variável começa com `NEXT_PUBLIC_`.
 - No Vercel, **não** ative a integração do Neon que cria um branch por preview. Os previews devem usar o branch `dev`.
 

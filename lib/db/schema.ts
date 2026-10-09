@@ -208,6 +208,8 @@ export const alimentosUsuario = pgTable(
     fibraG: numeric("fibra_g", n62),
     sodioMg: numeric("sodio_mg", n82),
     origem: text("origem").notNull().default("rotulo"),
+    // Fase 4: EAN lido pela câmera (um alimento por código e por usuário).
+    codigoBarras: text("codigo_barras"),
     criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
     atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
   },
@@ -228,7 +230,9 @@ export const alimentosUsuario = pgTable(
       "alimentos_usuario_macros_check",
       sql`coalesce(${t.proteinaG}, 0) + coalesce(${t.carboG}, 0) + coalesce(${t.gorduraG}, 0) <= 100.5`,
     ),
-    check("alimentos_usuario_origem_check", sql`${t.origem} in ('rotulo', 'ia_estimativa')`),
+    check("alimentos_usuario_origem_check", sql`${t.origem} in ('rotulo', 'ia_estimativa', 'codigo_barras')`),
+    check("alimentos_usuario_codigo_check", sql`${t.codigoBarras} ~ '^[0-9]{8}$|^[0-9]{13}$'`),
+    uniqueIndex("alimentos_usuario_codigo_key").on(t.userId, t.codigoBarras).where(sql`${t.codigoBarras} is not null`),
   ],
 );
 
@@ -708,9 +712,49 @@ export const usoIa = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.data, t.tipo] }),
-    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao')`),
+    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo')`),
     check("uso_ia_chamadas_check", sql`${t.chamadas} between 0 and 10000`),
   ],
 );
 
 export type CatalogoExercicio = typeof catalogoExercicios.$inferSelect;
+
+// ───────────────────────── Fase 4: código de barras ─────────────────────────
+
+// Cache COMPARTILHADO de produtos do Open Food Facts (ODbL). Só o servidor grava, a partir da resposta
+// validada do Open Food Facts; nunca contém texto de usuário nem quem consultou. "nao_encontrado" também
+// fica guardado para não repetir a consulta.
+export const produtosBarras = pgTable(
+  "produtos_barras",
+  {
+    codigo: text("codigo").primaryKey(),
+    status: text("status").notNull(),
+    nome: text("nome"),
+    marca: text("marca"),
+    quantidade: text("quantidade"),
+    porcaoG: numeric("porcao_g", n62),
+    kcal: numeric("kcal", n72),
+    proteinaG: numeric("proteina_g", n62),
+    carboG: numeric("carbo_g", n62),
+    gorduraG: numeric("gordura_g", n62),
+    fibraG: numeric("fibra_g", n62),
+    sodioMg: numeric("sodio_mg", n82),
+    incompleto: boolean("incompleto").notNull().default(false),
+    suspeito: boolean("suspeito").notNull().default(false),
+    consultadoEm: timestamp("consultado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    check("produtos_barras_codigo_check", sql`${t.codigo} ~ '^[0-9]{8}$|^[0-9]{13}$'`),
+    check("produtos_barras_status_check", sql`${t.status} in ('encontrado', 'nao_encontrado')`),
+    check("produtos_barras_nome_check", sql`char_length(${t.nome}) between 1 and 120`),
+    check("produtos_barras_marca_check", sql`char_length(${t.marca}) <= 80`),
+    check("produtos_barras_quantidade_check", sql`char_length(${t.quantidade}) <= 40`),
+    check("produtos_barras_kcal_check", sql`${t.kcal} between 0 and 900`),
+    check("produtos_barras_macros_check", sql`${t.proteinaG} between 0 and 100 and ${t.carboG} between 0 and 100 and ${t.gorduraG} between 0 and 100 and ${t.fibraG} between 0 and 100`),
+    check("produtos_barras_sodio_check", sql`${t.sodioMg} between 0 and 40000`),
+    check("produtos_barras_porcao_check", sql`${t.porcaoG} > 0 and ${t.porcaoG} <= 2000`),
+    check("produtos_barras_encontrado_check", sql`${t.status} = 'nao_encontrado' or ${t.nome} is not null`),
+  ],
+);
+
+export type ProdutoBarras = typeof produtosBarras.$inferSelect;

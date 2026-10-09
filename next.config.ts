@@ -7,9 +7,9 @@ const cabecalhosSeguranca = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   {
-    // Câmera liberada só na fase do código de barras.
+    // Câmera só para o próprio site (leitor de código de barras e foto do rótulo).
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
+    value: "camera=(self), microphone=(), geolocation=(), payment=(), usb=()",
   },
 ];
 

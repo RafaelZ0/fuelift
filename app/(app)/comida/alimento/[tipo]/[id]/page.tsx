@@ -144,6 +144,11 @@ export default async function PaginaAlimento(props: PageProps<"/comida/alimento/
       </section>
 
       <Medidas tipo={alimento.tipo} alimentoId={alimento.id} medidas={medidas} sugestoes={sugestoes} />
+      {alimento.origem === "codigo_barras" ? (
+        <p className="text-sm text-suave">
+          Dados do produto: <a href="https://world.openfoodfacts.org" className="underline" target="_blank" rel="noopener noreferrer">Open Food Facts</a> (licença ODbL). Confira com a embalagem; se algo estiver diferente, use Editar.
+        </p>
+      ) : null}
       {sugestoes.length > 0 ? (
         <p className="text-xs text-suave">
           Medidas sugeridas: IBGE, Pesquisa de Orçamentos Familiares 2008-2009, Tabela de Medidas Referidas para os Alimentos Consumidos no Brasil.

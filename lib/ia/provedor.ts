@@ -4,7 +4,13 @@ export type TipoArquivo = (typeof TIPOS_ARQUIVO)[number];
 
 export type ArquivoIa = { mimeType: TipoArquivo; dados: Uint8Array };
 
-export type PedidoIa = { sistema: string; texto: string; arquivos: ArquivoIa[] };
+export type PedidoIa = {
+  sistema: string;
+  texto: string;
+  arquivos: ArquivoIa[];
+  /** JSON Schema da resposta (padrão: o do rascunho de treino). */
+  esquema?: unknown;
+};
 
 export type MotivoErroIa = "indisponivel" | "limite_provedor" | "bloqueada" | "formato" | "config";
 

@@ -39,7 +39,7 @@ export function criarProvedorGemini(chave: string, modelo = MODELO_PADRAO): Prov
             config: {
               systemInstruction: pedido.sistema,
               responseMimeType: "application/json",
-              responseJsonSchema: ESQUEMA_RESPOSTA_IA,
+              responseJsonSchema: pedido.esquema ?? ESQUEMA_RESPOSTA_IA,
               temperature: 0.4,
               maxOutputTokens: 16384,
               abortSignal: AbortSignal.timeout(TEMPO_LIMITE_MS),

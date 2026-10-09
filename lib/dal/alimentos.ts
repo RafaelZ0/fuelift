@@ -238,6 +238,8 @@ export type DadosAlimentoUsuario = {
   gorduraG: number | null;
   fibraG: number | null;
   sodioMg: number | null;
+  /** Quando o alimento veio de um código de barras (origem "codigo_barras"). */
+  codigoBarras?: string | null;
 };
 
 export async function listarMeusAlimentos(userId: string) {
@@ -254,7 +256,13 @@ export async function criarAlimentoUsuario(userId: string, dados: DadosAlimentoU
   exigirId(userId);
   const [a] = await db
     .insert(alimentosUsuario)
-    .values({ ...dados, userId, nomeBusca: normalizarBusca(`${dados.nome} ${dados.marca ?? ""}`), origem: "rotulo" })
+    .values({
+      ...dados,
+      userId,
+      nomeBusca: normalizarBusca(`${dados.nome} ${dados.marca ?? ""}`),
+      codigoBarras: dados.codigoBarras ?? null,
+      origem: dados.codigoBarras ? "codigo_barras" : "rotulo",
+    })
     .returning({ id: alimentosUsuario.id });
   return a.id;
 }

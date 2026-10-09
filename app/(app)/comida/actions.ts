@@ -25,6 +25,8 @@ import {
   excluirRegistro,
   itensDaRefeicao,
 } from "@/lib/dal/registros";
+import { conferirEnergia, normalizarCodigo } from "@/lib/barras";
+import { alimentoDoCodigo } from "@/lib/dal/produtos";
 import { montarRegistros } from "@/lib/diario";
 import { dentroDoLimite } from "@/lib/limites";
 import { registrarErro } from "@/lib/log";
@@ -49,7 +51,7 @@ import {
 // entrada com Zod e usa o user_id da sessão. Ids recebidos são conferidos na DAL
 // (filtro por user_id) e, para dados do usuário, também pelo banco (FK por id + user_id).
 
-export type Estado = { ok?: string; erro?: string; erros?: ErrosCampos };
+export type Estado = { ok?: string; erro?: string; erros?: ErrosCampos; divergencia?: boolean };
 const FALHA = "Não foi possível salvar agora. Tente de novo.";
 
 const urlDia = (data: string) => `/comida?data=${data}`;
@@ -129,6 +131,7 @@ export async function adicionar(_: Estado, form: FormData): Promise<Estado> {
         gramas,
         medidaTexto,
         nutrientes,
+        origem: alimento.origem === "codigo_barras" ? "codigo_barras" : "manual",
       },
     ]);
   } catch (e) {
@@ -265,12 +268,33 @@ export async function salvarAlimento(_: Estado, form: FormData): Promise<Estado>
   }
   if (dados.sodioMg !== null && dados.sodioMg > 40000) return { erros: { sodioMg: "Sódio alto demais. Confira o rótulo." } };
 
+  // A conta do rótulo precisa fechar (calorias ≈ 4×proteína + 4×carboidrato + 9×gordura). Se não fechar,
+  // o usuário pode confirmar que os valores estão como na embalagem (rótulos têm álcool, polióis, arredondamentos).
+  const conta = conferirEnergia({ kcal: dados.kcal, proteinaG: dados.proteinaG, carboG: dados.carboG, gorduraG: dados.gorduraG, fibraG: null, sodioMg: null });
+  if (!conta.fecha && form.get("confirmarDivergencia") !== "on") {
+    return {
+      divergencia: true,
+      erro: `As calorias não batem com os macros: pelos macros seriam cerca de ${conta.esperadas} kcal por 100 g e você informou ${Math.round(dados.kcal)}. Confira os números no rótulo. Se estiver igual à embalagem, marque a caixa e salve de novo.`,
+    };
+  }
+
+  // Código de barras (vem do leitor): só vale se o dígito verificador estiver certo.
+  const codigoForm = form.get("codigo");
+  const codigo = typeof codigoForm === "string" && codigoForm !== "" ? normalizarCodigo(codigoForm) : null;
+  if (typeof codigoForm === "string" && codigoForm !== "" && !codigo) return { erro: "Código de barras inválido." };
+
   let novoId: string | null = null;
   try {
-    if (editar?.success) {
+    if (!editar?.success && codigo) {
+      const existente = await alimentoDoCodigo(userId, codigo);
+      if (existente) novoId = existente; // já tinha esse produto: reaproveita
+    }
+    if (novoId) {
+      // nada a gravar
+    } else if (editar?.success) {
       if (!(await atualizarAlimentoUsuario(userId, editar.data, dados))) return { erro: "Alimento não encontrado." };
     } else {
-      novoId = await criarAlimentoUsuario(userId, dados);
+      novoId = await criarAlimentoUsuario(userId, { ...dados, codigoBarras: codigo });
     }
   } catch (e) {
     registrarErro("salvarAlimento", e);
