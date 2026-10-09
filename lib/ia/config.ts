@@ -1,5 +1,5 @@
 // Regras de uso da IA (limites e quem pode usar). Puro: recebe o ambiente como argumento.
-export const LIMITE_DIARIO = { plano: 5, importacao: 5, rotulo: 10 } as const;
+export const LIMITE_DIARIO = { plano: 5, importacao: 5, rotulo: 10, texto: 20, estimativa: 10 } as const;
 export type TipoUsoIa = keyof typeof LIMITE_DIARIO;
 
 export const LIMITES_ARQUIVO = { quantidade: 4, bytesPorArquivo: 4 * 1024 * 1024, bytesTotal: 6 * 1024 * 1024 } as const;

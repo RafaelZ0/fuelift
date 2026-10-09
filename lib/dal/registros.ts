@@ -38,7 +38,7 @@ export type NovoRegistro = {
   medidaTexto: string | null;
   nutrientes: Nutrientes;
   /** De onde veio o registro (padrão: manual). */
-  origem?: "manual" | "codigo_barras";
+  origem?: "manual" | "codigo_barras" | "ia_texto";
 };
 
 /** Grava registros com os nutrientes já calculados (snapshot). Para alimento do usuário, o banco confere o dono. */

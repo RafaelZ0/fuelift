@@ -240,6 +240,8 @@ export type DadosAlimentoUsuario = {
   sodioMg: number | null;
   /** Quando o alimento veio de um código de barras (origem "codigo_barras"). */
   codigoBarras?: string | null;
+  /** Padrão: rotulo (ou codigo_barras quando há código). `ia_estimativa` = estimativa da IA confirmada pelo usuário. */
+  origem?: "rotulo" | "ia_estimativa";
 };
 
 export async function listarMeusAlimentos(userId: string) {
@@ -261,7 +263,7 @@ export async function criarAlimentoUsuario(userId: string, dados: DadosAlimentoU
       userId,
       nomeBusca: normalizarBusca(`${dados.nome} ${dados.marca ?? ""}`),
       codigoBarras: dados.codigoBarras ?? null,
-      origem: dados.codigoBarras ? "codigo_barras" : "rotulo",
+      origem: dados.origem ?? (dados.codigoBarras ? "codigo_barras" : "rotulo"),
     })
     .returning({ id: alimentosUsuario.id });
   return a.id;

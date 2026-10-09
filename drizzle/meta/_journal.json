@@ -71,6 +71,13 @@
       "when": 1791574171368,
       "tag": "0009_fase4_codigo_barras",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791576515306,
+      "tag": "0010_fase5_uso_ia_refeicao",
+      "breakpoints": true
     }
   ]
 }

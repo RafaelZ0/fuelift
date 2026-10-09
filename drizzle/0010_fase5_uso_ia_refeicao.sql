@@ -1,0 +1,2 @@
+ALTER TABLE "uso_ia" DROP CONSTRAINT "uso_ia_tipo_check";--> statement-breakpoint
+ALTER TABLE "uso_ia" ADD CONSTRAINT "uso_ia_tipo_check" CHECK ("uso_ia"."tipo" in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa'));

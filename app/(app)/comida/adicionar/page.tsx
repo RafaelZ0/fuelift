@@ -43,6 +43,12 @@ export default async function PaginaAdicionar(props: PageProps<"/comida/adiciona
         ) : null}
       </Busca>
       <Link
+        href={`/comida/ia${volta}`}
+        className="flex min-h-12 items-center justify-center rounded-full border-2 border-marca font-bold"
+      >
+        Registrar com IA (escrevendo)
+      </Link>
+      <Link
         href={`/comida/barras${volta}`}
         className="flex min-h-12 items-center justify-center rounded-full bg-destaque font-bold text-sobre-destaque"
       >
