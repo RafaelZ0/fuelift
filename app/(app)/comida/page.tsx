@@ -33,7 +33,10 @@ export default async function PaginaComida(props: PageProps<"/comida">) {
     <div className="space-y-10">
       <header className="space-y-4">
         <h1 className="text-4xl font-black tracking-tight">Comida</h1>
-        <div className="flex gap-2 text-sm font-semibold">
+        <div className="flex flex-wrap gap-2 text-sm font-semibold">
+          <Link href="/comida/receitas" className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-borda px-4 text-suave">
+            Receitas
+          </Link>
           <Link href="/comida/meus-alimentos" className="flex min-h-11 items-center whitespace-nowrap rounded-full border-2 border-borda px-4 text-suave">
             Meus alimentos
           </Link>

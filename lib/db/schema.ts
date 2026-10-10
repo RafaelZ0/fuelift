@@ -233,7 +233,7 @@ export const alimentosUsuario = pgTable(
       "alimentos_usuario_macros_check",
       sql`coalesce(${t.proteinaG}, 0) + coalesce(${t.carboG}, 0) + coalesce(${t.gorduraG}, 0) <= 100.5`,
     ),
-    check("alimentos_usuario_origem_check", sql`${t.origem} in ('rotulo', 'ia_estimativa', 'codigo_barras')`),
+    check("alimentos_usuario_origem_check", sql`${t.origem} in ('rotulo', 'ia_estimativa', 'codigo_barras', 'receita')`),
     check("alimentos_usuario_codigo_check", sql`${t.codigoBarras} ~ '^[0-9]{8}$|^[0-9]{13}$'`),
     uniqueIndex("alimentos_usuario_codigo_key").on(t.userId, t.codigoBarras).where(sql`${t.codigoBarras} is not null`),
   ],
@@ -871,3 +871,65 @@ export const relatoriosSemanais = pgTable(
 );
 
 export type RelatorioSemanalRow = typeof relatoriosSemanais.$inferSelect;
+
+// ───────────────────────── Fase 7B: receitas ─────────────────────────
+
+// ATENÇÃO: as chaves para alimentos_usuario têm ON DELETE SET NULL ("alimento_usuario_id") editado à mão na
+// migration 0013 (o Drizzle não gera lista de colunas; apagar um alimento não pode ser bloqueado pela receita).
+// Receita = lista de ingredientes (com os nutrientes de cada um no momento em que foi salva), rendimento em
+// porções e peso final. Ela vira um alimento do próprio usuário (origem "receita") para entrar no diário.
+export const receitas = pgTable(
+  "receitas",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    nome: text("nome").notNull(),
+    porcoes: numeric("porcoes", { precision: 5, scale: 1, mode: "number" }).notNull(),
+    pesoFinalG: numeric("peso_final_g", { precision: 7, scale: 1, mode: "number" }).notNull(),
+    // Alimento do usuário gerado a partir da receita (null se ele foi apagado em "Meus alimentos").
+    alimentoUsuarioId: uuid("alimento_usuario_id"),
+    criadoEm: timestamp("criado_em", { withTimezone: true }).notNull().defaultNow(),
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique("receitas_id_user_key").on(t.id, t.userId),
+    foreignKey({ columns: [t.alimentoUsuarioId, t.userId], foreignColumns: [alimentosUsuario.id, alimentosUsuario.userId] }),
+    index("receitas_user").on(t.userId),
+    check("receitas_nome_check", sql`char_length(${t.nome}) between 1 and 120`),
+    check("receitas_porcoes_check", sql`${t.porcoes} between 0.5 and 200`),
+    check("receitas_peso_check", sql`${t.pesoFinalG} between 1 and 50000`),
+  ],
+);
+
+export const receitaItens = pgTable(
+  "receita_itens",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: dono(),
+    receitaId: uuid("receita_id").notNull(),
+    ordem: integer("ordem").notNull(),
+    alimentoBaseId: uuid("alimento_base_id").references(() => alimentosBase.id, { onDelete: "set null" }),
+    alimentoUsuarioId: uuid("alimento_usuario_id"),
+    nome: text("nome").notNull(),
+    gramas: numeric("gramas", { precision: 7, scale: 1, mode: "number" }).notNull(),
+    // Nutrientes do ingrediente na quantidade usada, no momento em que a receita foi salva (null = desconhecido).
+    kcal: numeric("kcal", n82),
+    proteinaG: numeric("proteina_g", n72),
+    carboG: numeric("carbo_g", n72),
+    gorduraG: numeric("gordura_g", n72),
+    fibraG: numeric("fibra_g", n72),
+  },
+  (t) => [
+    foreignKey({ columns: [t.receitaId, t.userId], foreignColumns: [receitas.id, receitas.userId] }).onDelete("cascade"),
+    foreignKey({ columns: [t.alimentoUsuarioId, t.userId], foreignColumns: [alimentosUsuario.id, alimentosUsuario.userId] }),
+    index("receita_itens_receita").on(t.receitaId),
+    check("receita_itens_alimento_check", sql`num_nonnulls(${t.alimentoBaseId}, ${t.alimentoUsuarioId}) <= 1`),
+    check("receita_itens_nome_check", sql`char_length(${t.nome}) between 1 and 160`),
+    check("receita_itens_gramas_check", sql`${t.gramas} between 0.1 and 10000`),
+    check("receita_itens_ordem_check", sql`${t.ordem} between 0 and 60`),
+    check("receita_itens_nutrientes_check", sql`${t.kcal} between 0 and 50000 and ${t.proteinaG} between 0 and 5000 and ${t.carboG} between 0 and 5000 and ${t.gorduraG} between 0 and 5000 and ${t.fibraG} between 0 and 5000`),
+  ],
+);
+
+export type Receita = typeof receitas.$inferSelect;
+export type ReceitaItem = typeof receitaItens.$inferSelect;
