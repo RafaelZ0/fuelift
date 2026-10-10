@@ -85,6 +85,13 @@
       "when": 1791580961577,
       "tag": "0011_fase6_gasto_passos",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791655444127,
+      "tag": "0012_fase7a_relatorio_semanal",
+      "breakpoints": true
     }
   ]
 }

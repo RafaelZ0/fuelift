@@ -41,6 +41,11 @@ export default async function PaginaProgresso(props: PageProps<"/progresso">) {
     <div className="space-y-14">
       <EmBreve titulo="Progresso" texto="Seu corpo ao longo do tempo." />
 
+      <Link href="/progresso/semana" className="block rounded-2xl border-2 border-linha p-4 active:bg-superficie">
+        <span className="block text-lg font-bold">Resumo da semana</span>
+        <span className="block text-sm text-suave">Calorias, treinos, peso e gasto da semana, com um texto-resumo</span>
+      </Link>
+
       <Link href="/progresso/meta" className="block rounded-2xl border-2 border-marca p-4 active:bg-superficie">
         <span className="block text-lg font-bold">Meta e plano</span>
         <span className="block text-sm text-suave">Seu gasto estimado, quanto comer por dia e a projeção do peso</span>

@@ -715,7 +715,7 @@ export const usoIa = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.data, t.tipo] }),
-    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa', 'atividade', 'metas')`),
+    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa', 'atividade', 'metas', 'relatorio')`),
     check("uso_ia_chamadas_check", sql`${t.chamadas} between 0 and 10000`),
   ],
 );
@@ -847,3 +847,27 @@ export type GastoEstimado = typeof gastoEstimado.$inferSelect;
 export type ProjecaoPeso = typeof projecoesPeso.$inferSelect;
 export type PassosDia = typeof passosDia.$inferSelect;
 export type TokenApi = typeof tokensApi.$inferSelect;
+
+// ───────────────────────── Fase 7A: relatório semanal ─────────────────────────
+
+// Um relatório por semana (segunda-feira). `dados` é o resumo calculado pelo app; o texto da IA (opcional)
+// fica ligado ao hash dos números com que foi escrito, e só é mostrado se os números não mudaram.
+export const relatoriosSemanais = pgTable(
+  "relatorios_semanais",
+  {
+    userId: dono(),
+    inicio: date("inicio").notNull(),
+    dados: jsonb("dados").$type<Record<string, unknown>>().notNull(),
+    textoIa: text("texto_ia"),
+    textoHash: text("texto_hash"),
+    atualizadoEm: timestamp("atualizado_em", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.userId, t.inicio] }),
+    check("relatorios_semanais_segunda_check", sql`extract(isodow from ${t.inicio}) = 1`),
+    check("relatorios_semanais_texto_check", sql`char_length(${t.textoIa}) <= 2000`),
+    check("relatorios_semanais_hash_check", sql`${t.textoHash} ~ '^[0-9a-f]{64}$'`),
+  ],
+);
+
+export type RelatorioSemanalRow = typeof relatoriosSemanais.$inferSelect;

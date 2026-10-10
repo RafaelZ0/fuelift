@@ -140,6 +140,9 @@ export default async function PaginaHoje() {
         <Link href="/progresso/meta" className="flex min-h-12 items-center justify-center rounded-full border-2 border-borda font-semibold">
           Meta e plano
         </Link>
+        <Link href="/progresso/semana" className="flex min-h-12 items-center justify-center rounded-full border-2 border-borda font-semibold">
+          Resumo da semana
+        </Link>
       </section>
     </div>
   );
