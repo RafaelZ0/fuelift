@@ -99,6 +99,13 @@
       "when": 1791655859838,
       "tag": "0013_fase7b_receitas",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791656505545,
+      "tag": "0014_fase7c_uso_foto",
+      "breakpoints": true
     }
   ]
 }

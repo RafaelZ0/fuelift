@@ -11,14 +11,17 @@ import { criarMedida } from "@/lib/dal/medidas";
 import { casarItens, type CandidatoAlimento } from "@/lib/dal/refeicao-ia";
 import { criarRegistros } from "@/lib/dal/registros";
 import { hojeSaoPaulo } from "@/lib/datas";
-import { LIMITE_DIARIO, type TipoUsoIa } from "@/lib/ia/config";
+import { LIMITE_DIARIO, LIMITES_ARQUIVO, tipoPeloConteudo, type TipoUsoIa } from "@/lib/ia/config";
 import { verificarAcessoIa } from "@/lib/ia/acesso";
 import { ErroIa } from "@/lib/ia/provedor";
 import { obterProvedor } from "@/lib/ia/provedor-ativo";
 import {
   ESQUEMA_ESTIMATIVA,
   ESQUEMA_REFEICAO,
+  INSTRUCAO_SISTEMA_FOTO,
   INSTRUCAO_SISTEMA_ESTIMATIVA,
+  limitarConfiancaDaFoto,
+  montarEntradaFoto,
   INSTRUCAO_SISTEMA_REFEICAO,
   montarEntradaEstimativa,
   montarEntradaRefeicao,
@@ -89,6 +92,37 @@ export async function interpretarRefeicao(_: EstadoRefeicaoIa, form: FormData): 
   }
 }
 
+// ─── Foto do prato (a imagem não é guardada: só é enviada ao Google para interpretação) ───
+
+export async function interpretarFoto(_: EstadoRefeicaoIa, form: FormData): Promise<EstadoRefeicaoIa> {
+  const { userId, admin } = await exigirUsuario();
+  const acesso = await verificarAcessoIa(userId, admin !== null);
+  if (!acesso.ok) return { erro: acesso.erro, precisaAceite: acesso.precisaAceite };
+
+  const foto = form.get("foto");
+  if (!(foto instanceof File) || foto.size === 0) return { erro: "Escolha uma foto do prato." };
+  if (foto.size > LIMITES_ARQUIVO.bytesPorArquivo) return { erro: "A foto pode ter no máximo 4 MB." };
+  const dados = new Uint8Array(await foto.arrayBuffer());
+  const tipo = tipoPeloConteudo(dados); // o tipo declarado pelo navegador não é confiável
+  if (!tipo || tipo === "application/pdf") return { erro: "Use uma imagem (JPEG, PNG ou WebP)." };
+  const entrada = montarEntradaFoto(form.get("nota"));
+
+  const r = await chamarProvedor(userId, "foto", "análises de foto", () =>
+    obterProvedor().gerar({ sistema: INSTRUCAO_SISTEMA_FOTO, texto: entrada.texto, arquivos: [{ mimeType: tipo, dados }], esquema: ESQUEMA_REFEICAO }),
+  );
+  if ("erro" in r) return { erro: r.erro };
+  try {
+    const { itens, descartados } = sanitizarRefeicao(r.bruto);
+    if (itens.length === 0) return { erro: "Não consegui identificar comida nessa foto. Tente de novo com mais luz e o prato inteiro à vista." };
+    const limitados = limitarConfiancaDaFoto(itens);
+    const candidatos = await casarItens(userId, limitados);
+    return { itens: limitados.map((item, i) => ({ ...item, candidatos: candidatos[i] })), descartados };
+  } catch (e) {
+    registrarErro("interpretarFoto", e);
+    return { erro: MSG.ilegivel };
+  }
+}
+
 // ─── Estimativa de um alimento que não está no banco (só quando o usuário pede) ───
 
 export async function estimarAlimento(_: EstadoEstimativa, form: FormData): Promise<EstadoEstimativa> {
@@ -152,6 +186,7 @@ const salvarSchema = z.object({
   data: dataDiario,
   refeicao: refeicaoSchema,
   itens: z.array(z.object({ tipo: tipoAlimento, alimentoId: idSchema, gramas: z.number().min(0.1).max(GRAMAS_MAX) })).min(1, "Nenhum item para salvar.").max(20),
+  origem: z.enum(["ia_texto", "ia_foto"]),
 });
 
 export async function salvarRefeicaoIa(_: EstadoSalvar, form: FormData): Promise<EstadoSalvar> {
@@ -163,9 +198,10 @@ export async function salvarRefeicaoIa(_: EstadoSalvar, form: FormData): Promise
   } catch {
     itensBrutos = null;
   }
-  const r = salvarSchema.safeParse({ data: form.get("data"), refeicao: form.get("refeicao"), itens: itensBrutos });
+  const origemForm = form.get("origem");
+  const r = salvarSchema.safeParse({ data: form.get("data"), refeicao: form.get("refeicao"), itens: itensBrutos, origem: origemForm === "ia_foto" ? "ia_foto" : "ia_texto" });
   if (!r.success) return { erro: r.error.issues[0]?.message ?? "Dados inválidos." };
-  const { data, refeicao, itens } = r.data;
+  const { data, refeicao, itens, origem } = r.data;
 
   try {
     const novos = [];
@@ -185,7 +221,7 @@ export async function salvarRefeicaoIa(_: EstadoSalvar, form: FormData): Promise
         gramas: it.gramas,
         medidaTexto: null,
         nutrientes,
-        origem: "ia_texto" as const,
+        origem,
       });
     }
     await criarRegistros(userId, novos);

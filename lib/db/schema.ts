@@ -715,7 +715,7 @@ export const usoIa = pgTable(
   },
   (t) => [
     primaryKey({ columns: [t.userId, t.data, t.tipo] }),
-    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa', 'atividade', 'metas', 'relatorio')`),
+    check("uso_ia_tipo_check", sql`${t.tipo} in ('plano', 'importacao', 'rotulo', 'texto', 'estimativa', 'atividade', 'metas', 'relatorio', 'foto')`),
     check("uso_ia_chamadas_check", sql`${t.chamadas} between 0 and 10000`),
   ],
 );

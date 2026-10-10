@@ -146,6 +146,8 @@ Primeira tela do app: calorias consumidas × meta, proteína, água, treino do d
 - Resumo automático: média de calorias e proteína, dias registrados, treinos feitos e faltas, variação da tendência de peso e gasto adaptativo atualizado.
 - Opcional: texto-resumo gerado pelo Gemini a partir desses números, sem inventar dados que não estejam no banco.
 
+**Implementado (Fase 7):** (7A) `/progresso/semana`: resumo de segunda a domingo com médias de calorias e proteína, dias com registro, treinos feitos e faltas, variação da tendência, gasto estimado e ritmo real × previsto; o texto da IA é opcional (sob demanda), recebe só os números do app e é descartado se citar número que o app não forneceu. (7B) Receitas: ingredientes da TACO ou próprios, rendimento em porções e peso final; viram um alimento do usuário (origem `receita`) com a medida "porção". (7C) Foto do prato: a imagem não é guardada, a confiança nunca é "alta" e as calorias vêm do banco. **Fora da Fase 7 e pendente:** fotos de progresso do corpo (armazenamento privado).
+
 ### 3.12 Meta de perda de peso e plano personalizado
 
 - O usuário define: peso-meta e data desejada (opcional).

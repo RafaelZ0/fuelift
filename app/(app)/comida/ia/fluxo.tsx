@@ -1,14 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useState, useTransition } from "react";
+import { useActionState, useRef, useState, useTransition } from "react";
 import { Aviso, BotaoEnviar, BotaoSecundario } from "@/components/ui";
 import { AVISO_NAO_ENVIADO } from "@/lib/ia/prompts";
 import { COBERTURA_MINIMA, LIMITES_REFEICAO, montarEntradaRefeicao, ROTULOS_CONFIANCA, type EstimativaAlimento } from "@/lib/ia/refeicao";
 import { buscar } from "../actions";
+import { gerarImagemSemMetadados } from "../../treino/ia/imagem";
 import {
   confirmarEstimativa,
   estimarAlimento,
+  interpretarFoto,
   interpretarRefeicao,
   salvarRefeicaoIa,
   type EstadoEstimativa,
@@ -27,17 +29,38 @@ const kcalDoItem = (i: ItemEditavel) => (i.escolhido?.kcal != null ? (i.escolhid
 export function FluxoRefeicao(props: { data: string; refeicao: string; rotuloRefeicao: string; gratuito: boolean; restanteTexto: number; restanteEstimativa: number }) {
   const [itens, setItens] = useState<ItemEditavel[] | null>(null);
   const [descartados, setDescartados] = useState(0);
+  const [aba, setAba] = useState<"texto" | "foto">("texto");
+  const [origem, setOrigem] = useState<"ia_texto" | "ia_foto">("ia_texto");
   if (itens) {
-    return <Revisao {...props} itens={itens} setItens={setItens} descartados={descartados} aoVoltar={() => setItens(null)} />;
+    return <Revisao {...props} origem={origem} itens={itens} setItens={setItens} descartados={descartados} aoVoltar={() => setItens(null)} />;
   }
+  const receber = (r: EstadoRefeicaoIa, de: "ia_texto" | "ia_foto") => {
+    setOrigem(de);
+    setDescartados(r.descartados ?? 0);
+    setItens((r.itens ?? []).map((it, i) => ({ ...it, chave: i, candidatos: it.candidatos, escolhido: (it.candidatos[0]?.cobertura ?? 0) >= COBERTURA_MINIMA ? it.candidatos[0] : null })));
+  };
   return (
-    <Entrada
-      {...props}
-      aoInterpretar={(r) => {
-        setDescartados(r.descartados ?? 0);
-        setItens((r.itens ?? []).map((it, i) => ({ ...it, chave: i, candidatos: it.candidatos, escolhido: (it.candidatos[0]?.cobertura ?? 0) >= COBERTURA_MINIMA ? it.candidatos[0] : null })));
-      }}
-    />
+    <div className="space-y-6">
+      <div role="tablist" aria-label="Como registrar" className="flex gap-2">
+        {(["texto", "foto"] as const).map((a) => (
+          <button
+            key={a}
+            type="button"
+            role="tab"
+            aria-selected={aba === a}
+            onClick={() => setAba(a)}
+            className={`min-h-12 flex-1 rounded-full border-2 font-semibold ${aba === a ? "border-marca text-texto" : "border-borda text-suave"}`}
+          >
+            {a === "texto" ? "Escrever" : "Foto do prato"}
+          </button>
+        ))}
+      </div>
+      {aba === "texto" ? (
+        <Entrada {...props} aoInterpretar={(r) => receber(r, "ia_texto")} />
+      ) : (
+        <EntradaFoto gratuito={props.gratuito} aoInterpretar={(r) => receber(r, "ia_foto")} />
+      )}
+    </div>
   );
 }
 
@@ -79,6 +102,93 @@ function Entrada({ gratuito, restanteTexto, aoInterpretar }: { gratuito: boolean
   );
 }
 
+// ─── Passo 1 (alternativa): foto do prato ───
+
+function EntradaFoto({ gratuito, aoInterpretar }: { gratuito: boolean; aoInterpretar: (r: EstadoRefeicaoIa) => void }) {
+  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [miniatura, setMiniatura] = useState<string | null>(null);
+  const [nota, setNota] = useState("");
+  const [erroLocal, setErroLocal] = useState<string | null>(null);
+  const [preparando, setPreparando] = useState(false);
+  const [estado, acao] = useActionState<EstadoRefeicaoIa, FormData>(async (anterior, form) => {
+    const r = await interpretarFoto(anterior, form);
+    if (r.itens) aoInterpretar(r);
+    return r;
+  }, {});
+  const [pendente, iniciar] = useTransition();
+  const entrada = useRef<HTMLInputElement>(null);
+
+  async function escolher(f: File | undefined) {
+    setErroLocal(null);
+    if (!f) return;
+    setPreparando(true);
+    try {
+      // A foto é refeita no navegador (JPEG reduzido): isso remove a localização e outros metadados.
+      const pronta = await gerarImagemSemMetadados(f);
+      if (pronta.size > 4 * 1024 * 1024) throw new Error("A foto pode ter no máximo 4 MB.");
+      setArquivo(pronta);
+      setMiniatura((antes) => {
+        if (antes) URL.revokeObjectURL(antes);
+        return URL.createObjectURL(pronta);
+      });
+    } catch (e) {
+      setArquivo(null);
+      setErroLocal(e instanceof Error ? e.message : "Não consegui ler essa foto.");
+    } finally {
+      setPreparando(false);
+      if (entrada.current) entrada.current.value = "";
+    }
+  }
+
+  function enviar(ev: React.FormEvent<HTMLFormElement>) {
+    ev.preventDefault();
+    if (!arquivo) return;
+    const fd = new FormData();
+    fd.set("foto", arquivo, "prato.jpg");
+    fd.set("nota", nota);
+    iniciar(() => acao(fd));
+  }
+
+  const ocupado = preparando || pendente;
+  return (
+    <form onSubmit={enviar} className="space-y-6" noValidate>
+      <p className="text-lg text-suave">Fotografe o prato de cima, com tudo à vista. A IA lista o que vê e estima as porções; você confere antes de salvar.</p>
+      <input ref={entrada} id="foto-prato" type="file" accept="image/jpeg,image/png,image/webp" capture="environment" className="sr-only" onChange={(ev) => void escolher(ev.target.files?.[0])} />
+      <label htmlFor="foto-prato" className="flex min-h-14 cursor-pointer items-center justify-center rounded-full border-2 border-borda text-lg font-semibold">
+        {arquivo ? "Trocar a foto" : "Fotografar ou escolher a foto"}
+      </label>
+      {miniatura ? (
+        // Pré-visualização local (blob:), liberada na CSP; a foto não é guardada em lugar nenhum.
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={miniatura} alt="Foto do prato que será enviada" className="aspect-[4/3] w-full rounded-2xl object-cover" />
+      ) : null}
+      <label className="block">
+        <span className="mb-2 block text-sm font-medium text-suave">Observação (opcional)</span>
+        <input
+          value={nota}
+          onChange={(e) => setNota(e.target.value)}
+          maxLength={200}
+          placeholder="Ex.: marmita de 500 g, prato fundo"
+          className="min-h-12 w-full border-b-2 border-borda bg-transparent py-2 text-lg outline-none placeholder:text-suave focus:border-marca"
+        />
+      </label>
+      <section aria-labelledby="previa-foto" className="space-y-2 rounded-2xl border-2 border-borda p-4">
+        <h2 id="previa-foto" className="text-lg font-bold">O que será enviado ao Google</h2>
+        <p className="font-semibold">{arquivo ? "A foto acima" : "Nenhuma foto escolhida"}{nota.trim() ? ` e a observação: "${nota.trim()}"` : ""}</p>
+        <p className="text-sm text-suave">{AVISO_NAO_ENVIADO}</p>
+        <p className="text-sm text-suave">A foto não é guardada pelo app e perde a localização antes de sair do aparelho. Não fotografe documentos, rostos nem nada além do prato.</p>
+        {gratuito ? <p className="text-sm text-suave">No plano gratuito, o Google pode usar o conteúdo para melhorar seus produtos.</p> : null}
+      </section>
+      {erroLocal ? <Aviso>{erroLocal}</Aviso> : null}
+      {estado.erro ? <Aviso>{estado.erro}</Aviso> : null}
+      {estado.precisaAceite ? <Link href="/treino/ia" className="block font-semibold underline">Ler e aceitar o aviso da IA</Link> : null}
+      <button type="submit" disabled={!arquivo || ocupado} className="min-h-14 w-full rounded-full bg-destaque px-6 text-lg font-bold text-sobre-destaque disabled:opacity-60">
+        {ocupado ? "A IA está olhando o prato…" : "Interpretar a foto"}
+      </button>
+    </form>
+  );
+}
+
 // ─── Passo 2: conferir, ajustar e salvar ───
 
 function Passo({ valor, onMenos, onMais, rotulo }: { valor: string; onMenos: () => void; onMais: () => void; rotulo: string }) {
@@ -91,8 +201,8 @@ function Passo({ valor, onMenos, onMais, rotulo }: { valor: string; onMenos: () 
   );
 }
 
-function Revisao({ data, refeicao, rotuloRefeicao, restanteEstimativa, itens, setItens, descartados, aoVoltar }: {
-  data: string; refeicao: string; rotuloRefeicao: string; restanteEstimativa: number;
+function Revisao({ data, refeicao, rotuloRefeicao, restanteEstimativa, origem, itens, setItens, descartados, aoVoltar }: {
+  data: string; refeicao: string; rotuloRefeicao: string; restanteEstimativa: number; origem: "ia_texto" | "ia_foto";
   itens: ItemEditavel[]; setItens: (f: (l: ItemEditavel[] | null) => ItemEditavel[] | null) => void; descartados: number; aoVoltar: () => void;
 }) {
   const [estado, acao] = useActionState<EstadoSalvar, FormData>(salvarRefeicaoIa, {});
@@ -115,9 +225,10 @@ function Revisao({ data, refeicao, rotuloRefeicao, restanteEstimativa, itens, se
     >
       <input type="hidden" name="data" value={data} />
       <input type="hidden" name="refeicao" value={refeicao} />
+      <input type="hidden" name="origem" value={origem} />
       <input type="hidden" name="itens" value={payload} />
       <p className="rounded-2xl border-2 border-aviso p-4 font-medium text-aviso">
-        <span aria-hidden="true">! </span>As gramas são estimativas da IA. Confira cada item e ajuste conforme o que você realmente comeu.
+        <span aria-hidden="true">! </span>{origem === "ia_foto" ? "Estimar a porção por foto é impreciso: as gramas abaixo são só um palpite da IA. Confira e ajuste cada item, de preferência pesando." : "As gramas são estimativas da IA. Confira cada item e ajuste conforme o que você realmente comeu."}
       </p>
       {descartados > 0 ? <p className="text-sm text-suave">{descartados} {descartados === 1 ? "item fora do padrão foi ignorado" : "itens fora do padrão foram ignorados"}.</p> : null}
 

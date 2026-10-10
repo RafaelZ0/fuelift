@@ -27,7 +27,7 @@ import { hojeSaoPaulo } from "@/lib/datas";
 import { LIMITE_DIARIO } from "@/lib/ia/config";
 import { ErroIa, type PedidoIa, type ProvedorIa } from "@/lib/ia/provedor";
 import { definirProvedorDeTeste } from "@/lib/ia/provedor-ativo";
-import { confirmarEstimativa, estimarAlimento, interpretarRefeicao, salvarRefeicaoIa } from "@/app/(app)/comida/ia/actions";
+import { confirmarEstimativa, estimarAlimento, interpretarFoto, interpretarRefeicao, salvarRefeicaoIa } from "@/app/(app)/comida/ia/actions";
 
 let chamadas: PedidoIa[] = [];
 let resposta: () => Promise<unknown> = async () => ({ itens: [] });
@@ -240,5 +240,78 @@ describe("salvar a refeição confirmada", () => {
     expect((await salvarRefeicaoIa({}, form([{ tipo: "base", alimentoId: arrozTaco, gramas: 10 }], { data: amanha }))).erro).toMatch(/futuros/);
     expect((await salvarRefeicaoIa({}, form([{ tipo: "base", alimentoId: arrozTaco, gramas: 10 }], { refeicao: "madrugada" }))).erro).toBeTruthy();
     expect((await salvarRefeicaoIa({}, form([{ tipo: "base", alimentoId: randomUUID(), gramas: 10 }]))).erro).toMatch(/não foi encontrado/);
+  });
+});
+
+describe("foto do prato", () => {
+  const png = () => new File([new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0, 0, 0, 0, 0])], "prato.png", { type: "image/png" });
+  const formFoto = (f: File | null, nota = "") => {
+    const x = new FormData();
+    if (f) x.set("foto", f);
+    x.set("nota", nota);
+    return x;
+  };
+
+  it("interpreta a foto, limita a confiança e casa com o banco; só a imagem e a observação vão à IA", async () => {
+    resposta = async () => ({ itens: [item({ confianca: "alta" }), item({ nome: "pão de queijo", gramas: 40, confianca: "alta" })] });
+    const r = await interpretarFoto({}, formFoto(png(), "marmita de 500 g"));
+    expect(r.erro).toBeUndefined();
+    expect(r.itens).toHaveLength(2);
+    expect(r.itens!.every((i) => i.confianca !== "alta")).toBe(true);
+    expect(r.itens![0].candidatos[0].id).toBe(arrozTaco);
+    expect(chamadas[0].arquivos).toHaveLength(1);
+    expect(chamadas[0].arquivos[0].mimeType).toBe("image/png");
+    expect(chamadas[0].texto).toContain("marmita de 500 g");
+    expect(chamadas[0].texto).not.toMatch(/@|user_id|uuid/i);
+  });
+
+  it("recusa sem foto, arquivo que finge ser imagem, PDF e arquivo grande, sem chamar a IA", async () => {
+    chamadas = [];
+    expect((await interpretarFoto({}, formFoto(null))).erro).toMatch(/Escolha uma foto/);
+    const falso = new File([new TextEncoder().encode("<script>alert(1)</script> isto não é imagem")], "x.png", { type: "image/png" });
+    expect((await interpretarFoto({}, formFoto(falso))).erro).toMatch(/imagem/);
+    const pdf = new File([new TextEncoder().encode("%PDF-1.4 conteudo qualquer aqui")], "x.pdf", { type: "application/pdf" });
+    expect((await interpretarFoto({}, formFoto(pdf))).erro).toMatch(/imagem/);
+    const grande = new File([new Uint8Array(4 * 1024 * 1024 + 1).fill(1)], "g.png");
+    expect((await interpretarFoto({}, formFoto(grande))).erro).toMatch(/4 MB/);
+    expect(chamadas).toHaveLength(0);
+  });
+
+  it("foto sem comida devolve mensagem clara; falha do provedor devolve a chamada", async () => {
+    resposta = async () => ({ itens: [] });
+    expect((await interpretarFoto({}, formFoto(png()))).erro).toMatch(/identificar comida/);
+    const antes = (await usoDoDia(A, hojeSaoPaulo(), "foto")).usadas;
+    resposta = async () => {
+      throw new ErroIa("indisponivel");
+    };
+    expect((await interpretarFoto({}, formFoto(png()))).erro).toMatch(/não respondeu/);
+    expect((await usoDoDia(A, hojeSaoPaulo(), "foto")).usadas).toBe(antes);
+  });
+
+  it("sem aceite da IA nada é enviado", async () => {
+    sessao.userId = randomUUID();
+    await db.insert(perfis).values({ userId: sessao.userId });
+    try {
+      chamadas = [];
+      expect((await interpretarFoto({}, formFoto(png()))).precisaAceite).toBe(true);
+      expect(chamadas).toHaveLength(0);
+    } finally {
+      await db.delete(perfis).where(eq(perfis.userId, sessao.userId));
+    }
+  });
+
+  it("salvar com origem ia_foto grava origem ia_foto; origem inventada vira ia_texto", async () => {
+    const f = (origem: string) => {
+      const x = new FormData();
+      x.set("data", "2026-01-16");
+      x.set("refeicao", "jantar");
+      x.set("itens", JSON.stringify([{ tipo: "base", alimentoId: arrozTaco, gramas: 120 }]));
+      x.set("origem", origem);
+      return x;
+    };
+    await expect(salvarRefeicaoIa({}, f("ia_foto"))).rejects.toThrow("REDIRECT");
+    await expect(salvarRefeicaoIa({}, f("manual; drop table registros_alimentares"))).rejects.toThrow("REDIRECT");
+    const rs = await db.select().from(registrosAlimentares).where(and(eq(registrosAlimentares.userId, A), eq(registrosAlimentares.data, "2026-01-16")));
+    expect(rs.map((r) => r.origem).sort()).toEqual(["ia_foto", "ia_texto"]);
   });
 });
